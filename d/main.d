@@ -9,7 +9,7 @@ class Data
 
 immutable class List(T)
 {
-    static immutable class Item
+    immutable class Item
     {
         this(immutable T data, immutable Item next) immutable 
         {
