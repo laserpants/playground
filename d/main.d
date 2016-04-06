@@ -1,15 +1,10 @@
 import std.stdio;
-import std.algorithm.iteration;
-
-class Data
-{
-    this(int x) immutable { this.x = x; }
-
-    int x;
-}
+import std.typecons;
 
 immutable class List(T)
 {
+    alias Cons = Tuple!(immutable T, "head", immutable List, "tail");
+
     static immutable class Item
     {
         this(immutable T data, immutable Item next) immutable 
@@ -34,80 +29,56 @@ immutable class List(T)
         length = tail.length + 1;
     }
 
-    private this(immutable Item head, uint length) immutable
+    private this(immutable Item head, ulong length) immutable
     {
         _head = head;
         this.length = length;
     }
 
-    //static immutable(List) cons(immutable T head, immutable List tail) 
-    //{
-    //    return new immutable List(head, tail);
-    //}
+    static immutable(List) fromArray(immutable T[] arr) pure
+    {
+        immutable(List) delegate(immutable List, immutable long) pure f;
+        f = delegate (list, index) => index == -1 
+                ? list 
+                : f(new immutable List(arr[index], list), index - 1);
+    
+        return f(List.empty(), arr.length - 1);
+    }
 
-    //static immutable(List) cons2(immutable List tail, immutable T head)
-    //{
-    //    return new immutable List(head, tail);
-    //}
+    static immutable(List) cons(immutable T head, immutable List tail) pure { return new immutable List(head, tail); }
+    static immutable(List) cons(immutable Cons cons) pure { return new immutable List(cons.head, cons.tail); }
+    static immutable(List) empty() pure { return new immutable List; }
 
-    //static int cons3(int x, immutable T head)
-    //{
-    //    return 123123;
-    //}
+    bool isEmpty() pure { return _head is null; }
 
-    bool empty() pure { return _head is null; }
+    immutable(T) head() pure { assert(!isEmpty()); return _head.data; }
+    immutable(List) tail() pure { assert(!isEmpty()); return new immutable List(_head.next, length - 1); }
 
-    immutable(T) head() pure { assert(!empty()); return _head.data; }
-    immutable(List) tail() pure { assert(!empty()); return new immutable List(_head.next, length - 1); }
+    immutable Cons destruct() pure { return Cons(head(), tail()); }
 
-    public immutable uint length;
+    public immutable ulong length;
 
     private immutable Item _head;
 }
 
-
-immutable(List!Data) xx(immutable List!Data seed, immutable Data[] arr)
+class Data
 {
-    immutable(List!Data) x(immutable List!Data);
-    uint index = 0;
-    x = delegate (immutable List!Data list) { 
-        return index == 1 
-            ? new immutable List!Data(arr[index++], list)
-            : x(new immutable List!Data(arr[index++], list));
-    };
-    return x(seed);
-}
-
-immutable(List!Data) conz(immutable List!Data tail, immutable Data head) 
-{
-    return new immutable List!Data(head, tail);
+    this(int x) immutable { this.x = x; }
+    int x;
 }
 
 void hello()
 {
-    immutable List!Data nil = new immutable List!Data;
+    auto list = List!Data.fromArray([new immutable Data(1), new immutable Data(2), new immutable Data(3)]);
 
-    //reduce!(List!Data.cons)(nil)([new immutable Data(1), new immutable Data(2)]);
+    assert(list.length == 3);
+    assert(list.head().x == 1);
+    assert(list.tail().head().x == 2);
+    assert(list.tail().tail().head().x == 3);
 
-    //int c = reduce!(xxx)(10, [new immutable Data(1), new immutable Data(2)]);
-
-    //immutable Data item = new immutable Data(0);
-
-    //immutable Data[] arr = []; // new immutable Data(1), new immutable Data(2)];
-
-    //auto x = conz(nil, new immutable Data(1));
-
-    //reduce!(conz)(nil, arr);
-    //reduce!(List!Data.cons3)(0, arr);
-
-    //List!Data.banana(data);
-
-    //auto list2 = List!Data.cons(new immutable Data(1), list);
-    //auto list3 = List!Data.cons(new immutable Data(222), list2);
-
-    //assert(list3.length == 2);
-
-    //writeln(list3.tail().head().x);
+    auto cons = list.destruct();
+    assert(cons.tail.length == 2);
+    assert(cons.head.x == 1);
 }
 
 void main() 
