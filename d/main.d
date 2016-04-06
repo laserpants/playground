@@ -1,5 +1,7 @@
 import std.stdio;
 import Immutable.list;
+import Immutable.Lazy.list;
+import Immutable.Lazy.suspension;
 
 class Data
 {
@@ -38,7 +40,84 @@ void hello()
     assert(list4.tail().tail().tail().head().x == 5);
 }
 
+class LL
+{
+    static class Item
+    {
+        this(int data, LL tail) 
+        {
+            this.data = data;
+            this.tail = tail;
+        }
+
+        int data;
+        LL tail;
+    }
+
+    this(int data, LL tail)
+    {
+        _head = new immutable Suspension!Item(() => new Item(data, tail));
+    }
+
+    this()
+    {
+        _head = null;
+    }
+
+    private this(immutable Suspension!Item item)
+    {
+        _head = item;
+    }
+
+    int head() { return _head.eval().data; }
+
+    LL tail() { return _head.eval().tail; }
+
+    LL take(int n)
+    {
+        if (0 == n)
+            return new LL;
+        Item item = _head.eval();
+        return new LL(item.data, tail().take(n - 1));
+    }
+
+    immutable Suspension!Item _head;
+}
+
+LL enumFrom(int n)
+{
+    return new LL(n, enumFrom(n + 1));
+}
+
+void hello2()
+{
+    auto susp = new immutable Suspension!int(() => 5);
+
+    int n = susp.eval();
+
+    writeln(n);
+
+    LL list3 = enumFrom(1);
+
+    //auto list4 = list3.take(10);
+
+    writeln("XX");
+
+    /*
+    LL list = new LL;
+
+    auto list2 = new LL(5, list);
+
+    writeln(list2.head());
+    */
+
+    //auto list2 = LazyList!int.cons(() => 5, list);
+
+    //assert(5 == list2.head().force());
+}
+
 void main() 
 {
     hello();
+    hello2();
 }
