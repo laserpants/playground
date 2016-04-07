@@ -1,6 +1,7 @@
 module Immutable.list;
 
 import std.typecons;
+import std.stdio;
 
 immutable class List(T)
 {
@@ -8,7 +9,7 @@ immutable class List(T)
 
     static immutable class Item
     {
-        this(immutable T data, immutable Item next) immutable 
+        this(immutable ref T data, immutable ref Item next) immutable 
         {
             this.data = data;
             this.next = next;
@@ -24,13 +25,19 @@ immutable class List(T)
         length = 0;
     }
 
-    this(immutable T data, immutable List tail) immutable 
+    this(immutable ref T data, immutable ref List tail) immutable 
     {
         _head = new immutable Item(data, tail._head);
         length = tail.length + 1;
     }
 
-    private this(immutable Item head, ulong length) immutable
+    this(immutable ref T data, immutable List tail) immutable 
+    {
+        _head = new immutable Item(data, tail._head);
+        length = tail.length + 1;
+    }
+
+    private this(immutable ref Item head, ulong length) immutable
     {
         _head = head;
         this.length = length;
@@ -41,12 +48,12 @@ immutable class List(T)
         immutable(List) delegate(immutable List, immutable long) pure f;
         f = delegate (list, index) => index == -1 
             ? list 
-            : f(new immutable List(arr[index], list), index - 1);
+            : f(List.cons(arr[index], list), index - 1);
     
         return f(List.nil(), arr.length - 1);
     }
 
-    static immutable(List) cons(immutable T head, immutable List tail) pure { return new immutable List(head, tail); }
+    static immutable(List) cons(immutable ref T head, immutable ref List tail) pure { return new immutable List(head, tail); }
     static immutable(List) nil() pure { return new immutable List; }
 
     bool empty() pure { return _head is null; }
@@ -56,7 +63,7 @@ immutable class List(T)
 
     immutable Cons destruct() pure { return Cons(_head.data, tail()); }
 
-    immutable(List) take(ulong n)
+    immutable(List) take(ulong n) pure
     {
         return 0 == n 
             ? new immutable List
