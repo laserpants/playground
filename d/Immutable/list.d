@@ -1,7 +1,6 @@
 module Immutable.list;
 
 import std.typecons;
-import std.stdio;
 
 immutable class List(T)
 {
