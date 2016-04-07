@@ -12,34 +12,32 @@ immutable class List(T)
         {
             this.data = data;
             this.next = next;
+            this.length = next ? next.length + 1 : 1;
         }
         
         immutable T data;
         immutable Item next;
+        immutable ulong length;
     }
 
     this() immutable 
     {
         _head = null;
-        length = 0;
-    }
-
-    this(immutable ref T data, immutable ref List tail) immutable 
-    {
-        _head = new immutable Item(data, tail._head);
-        length = tail.length + 1;
     }
 
     this(immutable ref T data, immutable List tail) immutable 
     {
         _head = new immutable Item(data, tail._head);
-        length = tail.length + 1;
     }
 
-    private this(immutable ref Item head, ulong length) immutable
+    this(immutable T data, immutable List tail) immutable 
+    {
+        _head = new immutable Item(data, tail._head);
+    }
+
+    private this(immutable ref Item head) immutable
     {
         _head = head;
-        this.length = length;
     }
 
     static immutable(List) fromArray(immutable T[] arr) pure
@@ -52,13 +50,23 @@ immutable class List(T)
         return f(List.nil(), arr.length - 1);
     }
 
-    static immutable(List) cons(immutable ref T head, immutable ref List tail) pure { return new immutable List(head, tail); }
+    static immutable(List) cons(immutable ref T head, immutable List tail) pure 
+    { 
+        return new immutable List(head, tail); 
+    }
+
+    static immutable(List) cons(immutable T head, immutable List tail) pure 
+    { 
+        return new immutable List(head, tail); 
+    }
+
     static immutable(List) nil() pure { return new immutable List; }
 
+    ulong length() pure { return _head ? _head.length : 0; }
     bool empty() pure { return _head is null; }
 
     immutable(T) head() pure { assert(!empty()); return _head.data; }
-    immutable(List) tail() pure { assert(!empty()); return new immutable List(_head.next, length - 1); }
+    immutable(List) tail() pure { assert(!empty()); return new immutable List(_head.next); }
 
     immutable Cons destruct() pure { return Cons(_head.data, tail()); }
 
@@ -68,8 +76,6 @@ immutable class List(T)
             ? new immutable List
             : new immutable List(_head.data, tail().take(n - 1));
     }
-
-    public immutable ulong length;
 
     private immutable Item _head;
 }
