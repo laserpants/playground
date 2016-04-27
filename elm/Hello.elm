@@ -44,18 +44,19 @@ treeForm nodeSize tree =
     yOffs = 400 / (toFloat h - 1)
     legForm : Path -> Form
     legForm = moveY (yOffs / 2) << traced defaultLine
-    subtree : Maybe Direction -> Tree a -> Float -> Form
+    subtree : Maybe Direction -> Tree a -> Float -> List Form
     subtree direction tree xOffs = 
-      group <| case tree of 
-       Empty -> []
-       Node left elm right -> 
-         (legForm `List.map` legs (2 * xOffs, yOffs) direction
-      ++ [ subtree (Just Left ) left  (xOffs / 2) |> move (-xOffs, -yOffs) 
-         , subtree (Just Right) right (xOffs / 2) |> move ( xOffs, -yOffs)
-         , node elm nodeSize |> moveY (yOffs / 2) ])
+      case tree of 
+        Empty -> []
+        Node left elm right -> 
+          List.map legForm (legs (2 * xOffs, yOffs) direction)
+       ++ List.map (move (-xOffs, -yOffs)) (subtree (Just Left ) left  (xOffs / 2))
+       ++ List.map (move ( xOffs, -yOffs)) (subtree (Just Right) right (xOffs / 2))
+       ++ [ node elm nodeSize |> moveY (yOffs / 2) ]
   in group 
-      [ moveY (200 - yOffs / 2) (subtree Nothing tree (wedgeWidth 400 h))
-      , outlined defaultLine (rect 400 400) ]
+      [ moveY (200 - yOffs / 2) (group <| subtree Nothing tree <| wedgeWidth 400 h)
+      , outlined defaultLine (rect 400 400) 
+      ]
 
 type Tree a = Empty | Node (Tree a) a (Tree a)
 
