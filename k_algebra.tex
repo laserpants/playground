@@ -1,0 +1,195 @@
+\documentclass[11pt]{article}
+\renewcommand{\baselinestretch}{1.05}
+\usepackage{amsmath,amsthm,verbatim,amssymb,amsfonts,amscd,graphicx,mathtools}
+\usepackage{graphics}
+\topmargin0.0cm \headheight0.0cm
+\headsep0.0cm
+\oddsidemargin0.0cm
+\textheight23.0cm
+\textwidth16.5cm
+\footskip1.0cm
+\theoremstyle{plain}
+\newtheorem{theorem}{Theorem}
+\newtheorem{corollary}{Corollary}
+\newtheorem{lemma}{Lemma}
+\newtheorem{proposition}{Proposition}
+\newtheorem*{surfacecor}{Corollary 1}
+\newtheorem{conjecture}{Conjecture} 
+\newtheorem{question}{Question} 
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}
+
+\begin{document}
+ 
+
+\subsection*{Module}
+
+A \emph{module} structure is a generalization of vector spaces over fields. A (left) module $A$, defined over a unital ring $R$ of scalars is an additive abelian group $\langle A, + \rangle$ together with a \emph{compatible} binary operation $R \times A \rightarrow A$, called \emph{scalar product}. 
+
+\subsubsection*{Axioms}
+
+$A$ is an abelian group (elements of $A$ are like vectors in a vector space):
+$$
+  \begin{tabular}{l r l r l l l l}
+    \emph{Associativity:} & $ \forall a, b, c \in A $ & $ : $ & $ (a + b) + c $ & $ = $ & $ a + (b + c) $ \\
+    \emph{Identity:} & $ \exists! 0 \in A \mid \forall a \in A $ & $ : $ & $ a + 0 $ & $ = $ & $ a $ \\
+    \emph{Inverse:} & $ \forall a \in A , \exists (-a) \in A $ & s.t. & $ a + (-a) $ & $ = $ & $ 0 $ \\
+    \emph{Commutativity:} & $ \forall a, b \in A $ & $ : $ & $ a + b $ & $ = $ & $ b + a $
+  \end{tabular}
+$$
+
+\noindent A unital ring $\langle R, +, \cdot \rangle$ is an abelian group $\langle R, + \rangle$ under addition. $R$ with multiplication forms a monoid. That is, $\langle R, \cdot \rangle$ satisfies:
+$$
+  \begin{tabular}{l r l c c c c c}
+    \emph{Associativity:} & $ \forall r, s, t \in R $ & $ : $ & $ (r \cdot s) \cdot t $ & $ = $ & $ r \cdot (s \cdot t) $ \\
+    \emph{Multiplicative identity:} & $ \exists! 1 \in R \mid \forall r \in R $ & $ : $ & $ 1 \cdot r $ & $ = $ & $ r $ & $ = $ & $ r \cdot 1 $ \\
+  \end{tabular}
+$$
+
+\noindent In the following, $rs$ is used as a short form for $r \cdot s$. For commutative rings, we also have that, 
+$$
+\forall r, s \in R \quad : \quad rs = sr.
+$$ 
+
+\noindent In any ring, multiplication distributes over addition:
+$$
+  \begin{tabular}{l r l r l l l l}
+    $\forall r, s, t \in R$ & $:$ & $r(s + t)$ & $=$ & $rs + rt$ \\
+                          & & $(r + s)t$ & $=$ & $rt + st$ 
+  \end{tabular}
+$$
+
+\noindent Given two rings $R$ and $S$, a \emph{ring homomorphism} $ \phi : R \rightarrow S $ is a function for which the following conditions hold:
+
+$$
+  \begin{tabular}{l}
+    $ \phi(a + b) = \phi(a) + \phi(b) $ \\
+    $ \phi(ab) = \phi(a)\phi(b) $ \\
+    $ \phi(1_R) = 1_S $ \\
+  \end{tabular}
+$$
+
+\subsubsection*{Module laws}
+
+Scalar multiplication $(\cdot)$ distributes over addition, in both arguments:
+$$
+  \begin{tabular}{l l l}
+    $ \forall r, s \in R; x, y \in A $ & $ : $ & $ r \cdot (x + y) = r \cdot x + r \cdot y $ \\
+                                             & & $ (r + s) \cdot x = r \cdot x + s \cdot x $
+  \end{tabular}
+$$
+
+\noindent To say that the scalar product is \emph{compatible} with multiplication in the ring, is equivalent to saying that it satisfies:
+
+$$
+  \begin{tabular}{l l l}
+    $ \forall r, s \in R; x \in A $ & $ : $ & $ (rs) \cdot x = r \cdot (s \cdot x) $ \\ 
+                                  & & $ 1_R \cdot x = x $
+  \end{tabular}
+$$
+
+\noindent where $1_R$ is the multiplicative identity in $R$. The ring $R$ \emph{acts on} the elements of $A$ by scalar multiplication.
+
+\subsection*{K-Algebra}
+
+A K-Algebra, or \emph{algebra over a field}, is a module $A$, equipped with a bilinear map $A \times A \rightarrow A$.
+
+\subsubsection*{Linear map}
+
+A linear map $f : A \rightarrow A$ satisfies two conditions;
+$$
+  \begin{tabular}{l l l l l l}
+    \emph{Additivity:} & $ \forall x, y \in A $ & $:$ & $ f(x + y) = f(x) + f(y) $ & \emph{and} \\
+    \emph{Homogeneity:} & $ \forall x \in A, \lambda \in K $ & $:$ & $ f(\lambda x) = \lambda f(x) $
+  \end{tabular}
+$$
+
+\noindent A \emph{bilinear} map is a function $f' : A \times A \rightarrow A$ which is linear in each argument separately:
+$$
+  \begin{tabular}{l l l}
+    $\forall x, y, z \in A; \alpha, \beta \in K $ & $ : $ & $ f'(x + y, z) =  f'(x, z) + f'(y, z) $ \\
+                                                        & & $ f'(x, y + z) =  f'(x, y) + f'(x, z) $ \\
+                                                        & & $ f'(\alpha x, \beta y) = (\alpha \beta) f'(x, y) $ \\
+  \end{tabular}
+$$
+
+\noindent Using infix notation, a K-module $A$ is an algebra over $K$ if the following identities hold:
+$$
+  \begin{tabular}{l l l l l}
+    $\forall x, y, z \in A; \alpha, \beta \in K $ & $ : $ & $ (x + y) \cdot z =  (x \cdot z) + (y \cdot z) $ \\
+                                                        & & $ x \cdot (y + z) =  (x \cdot y) + (x \cdot z) $ \\
+                                                        & & $ \alpha x \cdot \beta y = (\alpha \beta) (x \cdot y) $ \\
+  \end{tabular}
+$$
+
+\noindent A K-algebra structure on $A$ is the same as a homomorphism from a ring $K$ to $A$. If $A$ is a K-algebra, we can define $f : K \rightarrow A$ as $ f(k) = k \cdot 1_A $. I.e., the function $f$ maps $k \mapsto k$ as it acts on $1_A$. Then $f$ is a homomorphism, since
+
+$$
+  \begin{tabular}{l l | l l | l l}
+    $ f(k + l) $ & $ = (k + l) \cdot 1_A $                    & $ f(kl) $    & $ = (kl) \cdot 1_A $     & $ f(1) = 1 \cdot 1_A = 1_A $ \\
+                 & $ = (k \cdot 1_A) + (l \cdot 1_A) $        &              & $ = k \cdot (l \cdot 1_A) $ \\
+                 & $ = f(k) + f(l) $                          &              & $ = k \cdot f(l) $ \\
+                 &                                            &              & $ = k \cdot (1_A f(l)) $ \\
+                 &                                            &              & $ = (k \cdot 1_A)f(l) $ \\
+                 &                                            &              & $ = f(k)f(l) $ \\
+  \end{tabular}
+$$
+
+\hfill \break
+\noindent Conversely, if we have a homomorphism $f$ from $K$ to $A$, we can set $k \cdot a = f(k)a$. Then, the scalar product is distributive:
+
+$$
+  \begin{tabular}{l l | l l l l}
+    $ (k + l) \cdot a $ & $ = f(k + l)a $                     & $ k \cdot (a + b) $ & $ = f(k)(a + b) $ \\
+                        & $ = (f(k) + f(l))a $              & & $ = f(k)a + f(k)b $ \\
+                        & $ = f(k)a + f(l)a $               & & $ = (k \cdot a) + (k \cdot b) $ \\
+                        & $ = (k \cdot a) + (l \cdot a) $ \\
+
+  \end{tabular}
+$$
+
+\noindent and compatible with multiplication in $K$:
+
+$$
+  \begin{tabular}{l l | l l l l}
+    $ (kl) \cdot a $    & $ = f(kl)a $                        & $ 1 \cdot a = f(1)a = 1a = a $ \\
+                        & $ = f(k)f(l)a $ \\
+                        & $ = f(k)(l \cdot a) $ \\
+                        & $ = k \cdot (l \cdot a) $ \\
+  \end{tabular}
+$$
+
+\subsection*{Field extensions}
+
+A field $\langle K, +, \cdot \rangle$ is an abelian group under both addition and multiplication, for which the distributive law holds. A field $K$ is also a commutative ring with no \emph{non-trivial} ideals, that is, with no ideals other than $\langle 0 \rangle$ and $K$.
+
+$ \implies $ Let $K$ be a field and $I$ an ideal in $K$. If $I \neq \langle 0 \rangle$, then there is an element $a \in I, a \neq 0$. Now, since every nonzero element in a field is a unit, there is also $(a^{-1}) \in K $ such that $aa^{-1} = 1$. For any element $k \in K, k = k \cdot 1 = k(aa^{-1}) = (ka^{-1})a$. This element is also in $I$ since an ideal absorbs products. So, $I = K$.
+
+$ \impliedby $ If $R$ is a commutative ring with unity, and $a \in R, a \neq 0$; let $I = Ra = \{ ra \mid r \in R \}$ be an ideal in $R$. If $I = R$, then $1 \in I$, so $ra = 1$ for some $r \in R$. But then, $r$ is an inverse for $a$, and since $a$ is an arbitrarily chosen nonzero element, $R$ must be a field.
+
+\begin{itemize}
+  \item A field $L$ is an extension of another field $K$, if $K \subset L$. 
+  \item $L$ is an extension of $K$ if $L$ is a K-algebra.
+\end{itemize}
+
+
+% \title{Template}
+% \author{Joan Licata}
+% \maketitle
+% 
+% \section{Introduction} 
+% This is a sample document to show you a bit about how TeX works.  If you've never used TeX before, I recommend opening the template.tex file and the template.pdf file at the same time for comparison.  
+% 
+% \subsection{Structure}
+% The information at the top of template.tex tells the compiler how to format the finished document.  Commands shown in blue and preceded by a backslash give instructions and are often followed by supplemental information in curly brackets.  The  line `` (backslash) begin \{ document \} "  introduces the body of the paper.  Any ``begin" command must get paired with an ``end" command; look at the last line in this template.
+% 
+% \subsection{Math Mode}\label{section:mathmode}
+% % If you're wondering about the ``\label" above, it will be explained below.  Note that this line of text which follows the percent sign doesn't show up in the pdf.  This is a good way to leave notes for yourself on a work in progress.
+% Some formatting can be done in text mode (for example, you can make the font \textit{italic} or \textbf{boldface}), but for most mathematical symbols, you'll have to use math mode.  Math mode is most often introduced and ended with a \$.  For example, in math mode I can write the equation $x+ y=7$ and the program takes care of spacing.  It's also easy to write Greek letters ($\alpha$, $\Sigma$), exponents ($2^{x+y}$), and subscripts ($x_1$).  Look in any LaTeX guide to find a list of symbols and formatting commands.  
+% 
+% \section{References}
+% One of the nice things about using LaTeX is that it makes internal references easy.  For example, if I want to remind you where I discussed math mode, I can mention that it was in Section~\ref{section:mathmode}.  If you're looking at the pdf file, you see the correct reference, but in the TeX file I typed a label that I had attached to that section.  (You may need to typeset your document more than once to make the references show up correctly.)  Labels work for definitions, theorems, questions, sections, diagrams, and equations, among others.
+
+ 
+ 
+\end{document}
