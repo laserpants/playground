@@ -334,7 +334,7 @@ in the expected order. This code is in x86 assembly (NASM syntax) for Linux.
 
 *Tip:* Paste this code into an online code execution environment, 
 for example <https://www.tutorialspoint.com/compile_assembly_online.php> to
-see tre result.
+see the result.
 
 In the next part of this series, we will take a more detailed look at integer 
 representation in the binary numeral system.
