@@ -71,10 +71,10 @@ then there is exactly one way in which we can choose these coefficients.
 
 ### Counting the digits
 
-In a program implementation -- even though we could use the logarithm to find 
-the number of digits needed to represent a number -- a common approach 
-is to simply divide the number by the radix until the quotient becomes zero. 
-For example, in C:
+In a program implementation -- even though we could use the logarithm directly 
+to find the number of digits needed to represent a number -- a common approach 
+is to simply divide the number by the radix, in a loop, until the quotient 
+becomes zero. For example, in C:
 
     int num_digits (int n) {
         int i = 1;
