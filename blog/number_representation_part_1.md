@@ -9,8 +9,8 @@ representation of numeric values in computer memory.
 
 ### Numbers and numerals
 
-> *One could say that the difference between a number and its numeral is like 
-the difference between a person and her name.* &mdash; Unknown source
+> *"One could say that the difference between a number and its numeral is like 
+the difference between a person and her name."* &mdash; Unknown source
 
 Although we sometimes use the two terms interchangeably, there is a distinction 
 between the concept of a number and a numeral. A *numeral* is a symbolic 
