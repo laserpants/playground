@@ -29,7 +29,7 @@ of the symbols 0, 1, 2, 3, 4, 5, 6, 7, 8 or 9. The decimal numbers are said to
 have a numerical base (or *radix*) ten. We can think of the base as the size of 
 the alphabet from where we choose these individual digits. By constructing 
 strings of length $$s$$ using characters from this alphabet, we are able to 
-represent integers in the interval $$[0..10^{s-1}]$$. Conversely, any natural 
+represent integers in the interval $$[0..10^s-1]$$. Conversely, any natural 
 number can be decomposed into a [linear combination](http://mathworld.wolfram.com/LinearCombination.html) 
 of integral powers of ten, multiplied by coefficients chosen in the range from 
 zero to nine. For example, we can express the number 51,304 as the sum
