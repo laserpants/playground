@@ -183,8 +183,8 @@ of $$k + 1$$. Otherwise, if $$j > 0$$, then
   and we have the representation we need. 
   
 Since these cases are exhaustive, we find that $$P(k) \implies P(k + 1)$$, 
-which proves existence for all $$n \ge 1$$. It is also possible to represent 
-$$0$$ in any base as itself.
+which proves existence for all $$n \ge 1$$. Note that it is also possible to 
+represent $$0$$ in any base as itself.
 
 #### Proof of uniqueness
 
