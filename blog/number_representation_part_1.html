@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title></title>
+<script type="text/javascript" async src="https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-MML-AM_CHTML"></script>
+</head>
+<body>
+  <h1 id="number-representation-in-digital-electronics----part-1-numerical-bases">Number representation in digital electronics – Part 1: Numerical bases</h1>
+
+<p>In this series of posts, we will look at the different ways that numbers are 
+stored and processed in computers and other electronic devices. An important 
+part of this is the use of <em>numeral systems</em>, such as the binary and hexadecimal 
+numbers. Numeral systems (also called number systems) are methods and notation 
+for expressing numbers in concrete form, including formats used in the internal 
+representation of numeric values in computer memory.</p>
+
+<h3 id="numbers-and-numerals">Numbers and numerals</h3>
+
+<blockquote>
+  <p><em>One could say that the difference between a number and its numeral is like 
+the difference between a person and her name.</em> — Unknown source</p>
+</blockquote>
+
+<p>Although we sometimes use the two terms interchangeably, there is a distinction 
+between the concept of a number and a numeral. A <em>numeral</em> is a symbolic 
+representation of a number. Numbers are abstract constructs, and numerals are 
+the names and symbols which denote them.</p>
+
+<p><img src="images/heh.png" style="width:200px" /></p>
+
+<p><em>In the ancient Egyptian hieroglyphic numeral system, the god <a href="https://en.wikipedia.org/wiki/Heh_(god)">Heh</a> symbolized one million.</em></p>
+
+<h3 id="positional-numeral-systems">Positional numeral systems</h3>
+
+<p>In our ordinary decimal system, known as the <em>Hindu-Arabic</em> numeral system, we 
+write numbers as sequences, or strings, of <em>digits</em> – a digit being one 
+of the symbols 0, 1, 2, 3, 4, 5, 6, 7, 8 or 9. The decimal numbers are said to 
+have a numerical base (or <em>radix</em>) ten. We can think of the base as the size of 
+the alphabet from where we choose these individual digits. By constructing 
+strings of length <script type="math/tex">s</script> using characters from this alphabet, we are able to 
+represent integers in the interval <script type="math/tex">[0..10^{s-1}]</script>. Conversely, any natural 
+number can be decomposed into a <a href="http://mathworld.wolfram.com/LinearCombination.html">linear combination</a> 
+of integral powers of ten, multiplied by coefficients chosen in the range from 
+zero to nine. For example, we can express the number 51,304 as the sum</p>
+
+<script type="math/tex; mode=display">5 \cdot 10^4 + 1 \cdot 10^3 + 3 \cdot 10^2 + 0 \cdot 10^1 + 4 \cdot 10^0 = 51304</script>
+
+<p>Numeral systems of this kind are called <em>positional</em>. Each digit is assigned a 
+weight, based on its position in the sequence. Another property, shared by all 
+the numeral systems we will consider here, is that they have a 
+<em>uniform base</em>, i.e., the same base is used in all positions of the string. 
+Let <script type="math/tex">n = d_q ... d_2 d_1 d_0</script> be an arbitrary natural number. In other words, 
+<script type="math/tex">d_i</script> is the digit at position <script type="math/tex">i</script> in the decimal string representation of 
+<script type="math/tex">n</script>. Then</p>
+
+<script type="math/tex; mode=display">n = d_q 10^q + \cdots + d_2 10^2 + d_1 10^1 + d_0.</script>
+
+<p>More generally, for any radix <script type="math/tex">b</script> we can find coefficients 
+<script type="math/tex">a_0, a_1, \dots, a_q</script>, such that</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+n = a_q b^q + \cdots + a_2 b^2 + a_1 b^1 + a_0 \text{ where } 0 \le a_i < b \text{ for all $ i $, and $ a_q \ne 0 $}. %]]></script>
+
+<p>The length of this representation is <script type="math/tex">q + 1</script>, for some integer <script type="math/tex">q \ge 0</script>. 
+To express <script type="math/tex">q</script> in terms of <script type="math/tex">n</script>, first consider the real number <script type="math/tex">x</script> such 
+that <script type="math/tex">b^x = n</script>. Then <script type="math/tex">x = \log_b n</script>, and <script type="math/tex">q</script> is the largest integer less 
+than or equal to <script type="math/tex">x</script>. This mapping is known as the <em>floor</em> function and we 
+write <script type="math/tex">q = \lfloor\log_b n\rfloor</script>. This means that if</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+n = \!\!\! \sum_{i=0}^{\lfloor\log_b n\rfloor} \!\!\! a_i b^i \; (0 \le a_i < b) %]]></script>
+
+<p>then there is exactly one way in which we can choose these coefficients.</p>
+
+<h3 id="counting-the-digits">Counting the digits</h3>
+
+<p>In a program implementation – even though we could use the logarithm function 
+to find the number of digits needed to represent a number – a common approach 
+is to simply divide the number by the radix until the quotient becomes zero. 
+For example, in C:</p>
+
+<pre><code>int num_digits (int n) {
+    int i = 1;
+    while ((n /= 10))
+        ++i;
+    return i;
+}
+</code></pre>
+
+<p>Note that this works for any base – not only ten. Simply add a second 
+parameter for the base, e.g., <code>(int n, int base)</code> and change the while 
+statement to <code>while ((n /= base))</code>.</p>
+
+<h3 id="the-basis-representation-theorem">The basis representation theorem</h3>
+
+<p>The fact that every natural number is uniquely identified in the way we have 
+just described, is established by a result in number theory, known as the 
+<em>basis representation theorem</em>. To prove this theorem, we first need the 
+following lemma.</p>
+
+<p><em>Lemma 1.</em> The sum of a geometric series with <script type="math/tex">n - 1</script> terms, common ratio 
+<script type="math/tex">r</script>, and initial value <script type="math/tex">1</script> is <script type="math/tex">(r^n - 1)(r - 1)^{-1}</script>. In symbols;</p>
+
+<script type="math/tex; mode=display">\forall r \in \mathbb{R} \ (r \ne 1), n \in \mathbb{N} : (r - 1)(1 + r + r^2 + \dots + r^{n - 1}) = r^n - 1.</script>
+
+<p><em>Proof.</em> Let <script type="math/tex">S_n = 1 + r + r^2 + \dots + r^{n - 1}</script>. Multiply by 
+<script type="math/tex">r</script> on both sides, so that</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+    rS_n &= r(1 + r + r^2 + \dots + r^{n - 1}) \\
+         &= r + r^2 + \dots + r^n.
+  \end{align} %]]></script>
+
+<p>Then <script type="math/tex">rS_n - S_n = S_n(r - 1) = (r + r^2 + \dots + r^n) - (1 + r + r^2 + \dots + r^{n - 1}) = r^n - 1.</script></p>
+
+<p>We will now state the basis representation theorem in more formal terms.</p>
+
+<p><em>Theorem.</em> Given a base <script type="math/tex">b</script>, where <script type="math/tex">b</script> is any integer greater than one, and 
+a natural number <script type="math/tex">n</script>, there exists integers <script type="math/tex">% <![CDATA[
+d_0, d_1, \dots, d_q \; (0 \le d_i < b) %]]></script> 
+such that <script type="math/tex">n = d_q b^q + \cdots + d_2 b^2 + d_1 b^1 + d_0</script> and <script type="math/tex">d_q \ne 0</script>. 
+We call this the representation of <script type="math/tex">n</script> in base <script type="math/tex">b</script>. Furthermore, this 
+representation is unique.</p>
+
+<p><em>Proof.</em> The proof has two parts. First we show that a representation exists 
+for every <script type="math/tex">n</script>, and then that this representation must be unique.</p>
+
+<h4 id="proof-of-existence">Proof of existence</h4>
+
+<p>The argument is by induction on <script type="math/tex">n</script> and the statement we would like to prove is</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+P(n) \equiv \forall b \in \mathbb{Z} \; (b > 1), \exists q \in \mathbb{Z} \; (q \ge 0), 
+d_0, d_1, \dots, d_q \in \mathbb{Z} \; (0 \le d_i < b) \; \text{s.t.} \\
+n = d_q b^q + \cdots + d_2 b^2 + d_1 b^1 + d_0 \; \text{and where} \; d_q \ne 0. %]]></script>
+
+<p><em>Base case:</em> For <script type="math/tex">n = 1</script>, set <script type="math/tex">q = 0</script> and <script type="math/tex">d_0 = n = 1</script>. Then, <script type="math/tex">P(1)</script> holds.</p>
+
+<p><em>Induction hypothesis:</em> Assume <script type="math/tex">P(k)</script> to be true.</p>
+
+<p><em>Inductive step:</em> We consider two cases.</p>
+
+<ul>
+  <li>
+    <p>There exists at least one index <script type="math/tex">i</script> such that <script type="math/tex">% <![CDATA[
+d_i < b - 1 %]]></script>. 
+Let <script type="math/tex">j</script> be the smallest such index. If <script type="math/tex">j = 0</script>, then <script type="math/tex">d_0 + 1 \le b - 1</script> and therefore 
+<script type="math/tex">d_q b^q + \cdots + d_2 b^2 + d_1 b^1 + (d_0 + 1)</script> is a valid representation 
+of <script type="math/tex">k + 1</script>. Otherwise, if <script type="math/tex">j > 0</script>, then</p>
+
+    <script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+    k &= d_q b^q + \cdots + d_j b^j + (b - 1)b^{j - 1} + \cdots + (b - 1)b^2 + (b - 1)b + (b - 1) \\
+      &= d_q b^q + \cdots + d_j b^j + (b - 1)(1 + b + b^2 + \cdots + b^{j - 1}) 
+  \end{align} %]]></script>
+
+    <p>Then, by Lemma 1:</p>
+
+    <script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+                 k &= d_q b^q + \cdots + d_j b^j + b^j - 1 \\
+    \implies k + 1 &= d_q b^q + \cdots + d_j b^j + b^j \\
+                   &= d_q b^q + \cdots + (d_j + 1) b^j 
+  \end{align} %]]></script>
+
+    <p>Now, since we know that <script type="math/tex">d_j + 1 \le b - 1</script>, this is also a valid 
+representation of <script type="math/tex">k + 1</script>.</p>
+  </li>
+  <li>
+    <p>In this case, <script type="math/tex">d_i = b - 1</script> for all <script type="math/tex">i</script>. Then</p>
+
+    <script type="math/tex; mode=display">k = (b - 1)(1 + b + b^2 + \cdots + b^q).</script>
+
+    <p>Once again, applying Lemma 1 tells us that</p>
+
+    <script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+                 k &= b^{q + 1} - 1 \\
+    \implies k + 1 &= b^{q + 1} 
+  \end{align} %]]></script>
+
+    <p>and we have the representation we need.</p>
+  </li>
+</ul>
+
+<p>Since these cases are exhaustive, we find that <script type="math/tex">P(k) \implies P(k + 1)</script>, 
+which proves existence for all <script type="math/tex">n \ge 1</script>. It is also possible to represent 
+<script type="math/tex">0</script> in any base as itself.</p>
+
+<h4 id="proof-of-uniqueness">Proof of uniqueness</h4>
+
+<p>To prove that <script type="math/tex">d_q \dots d_2 d_1 d_0</script> is a unique representation of <script type="math/tex">n</script> in 
+base <script type="math/tex">b</script>, we will assume that there are two different representations of <script type="math/tex">n</script>, 
+so that</p>
+
+<script type="math/tex; mode=display">% <![CDATA[
+\begin{align}
+    n &= c_q b^q + \cdots + c_2 b^2 + c_1 b^1 + c_0 \\
+      &= d_q b^q + \cdots + d_2 b^2 + d_1 b^1 + d_0 
+  \end{align} %]]></script>
+
+<p>and then try to derive a contradiction from this.</p>
+
+<p>If the above two representations differ, then there must be some smallest index 
+<script type="math/tex">j</script> for which <script type="math/tex">c_j \ne d_j</script>. We may then choose <script type="math/tex">c_0, d_0, c_1, d_1, \dots</script> 
+in such a way that <script type="math/tex">c_j > d_j</script>. For these two representations to denote the 
+same number <script type="math/tex">n</script>, the difference of the two sums must be zero. We can therefore 
+let <script type="math/tex">\delta = \sum_{i = j + 1}^q (c_i - d_i)b^i</script>, and write</p>
+
+<script type="math/tex; mode=display">0 = \delta + (c_j - d_j)b^j = \displaystyle\frac{\delta}{b^j} + c_j - d_j = \!\!\! \sum_{i = j + 1}^q (c_i - d_i)b^{i - j} + c_j - d_j.</script>
+
+<p>Then, since each term in <script type="math/tex">\dfrac{\delta}{b^j}</script> is a factor of <script type="math/tex">b</script>, we find that</p>
+
+<script type="math/tex; mode=display">0 = \frac{\delta}{b^j} + c_j - d_j \equiv c_j - d_j \; (\!\!\bmod b).</script>
+
+<p>That is, <script type="math/tex">c_j - d_j \in \{ zb \;|\; z \in \mathbb{Z} \}</script>. 
+But since <script type="math/tex">% <![CDATA[
+0 \le c_j, d_j < b %]]></script>, it must be that <script type="math/tex">c_j - d_j = 0</script>, 
+which contradicts our initial assumption that <script type="math/tex">c_j \ne d_j</script>. 
+This concludes the proof.
+<script type="math/tex">\tag*{$\blacksquare$}</script></p>
+
+<h3 id="convert-an-integer-to-a-string">Convert an integer to a string</h3>
+
+<p>To convert an integer to a string in some arbitrary base, we use an algorithm 
+similar to the counting procedure described earlier. In this case, however, 
+we need to pay attention to the remainder at each step, and write these values 
+as characters to a buffer.</p>
+
+<p>We are really using <a href="http://www.ask-math.com/euclids-division-lemma.html">Euclid’s division lemma</a> 
+here, which says that <script type="math/tex">\forall n, m \in \mathbb{Z^+} \; \exists q, r \in \mathbb{Z} : n = mq + r,</script> 
+where <script type="math/tex">0 \le r \le m</script>.</p>
+
+<p><img src="images/euclid.jpg" /></p>
+
+<p>As an example, here we show the process for converting the number 2958409950 
+to base 16.</p>
+
+<table>
+  <thead>
+    <tr>
+      <th>Dividend</th>
+      <th>Quotient</th>
+      <th>Remainder</th>
+      <th>Digit</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>2958409950</td>
+      <td>184900621</td>
+      <td>14</td>
+      <td>E</td>
+    </tr>
+  </tbody>
+  <tbody>
+    <tr>
+      <td>184900621</td>
+      <td>11556288</td>
+      <td>13</td>
+      <td>D</td>
+    </tr>
+  </tbody>
+  <tbody>
+    <tr>
+      <td>11556288</td>
+      <td>722268</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+  <tbody>
+    <tr>
+      <td>722268</td>
+      <td>45141</td>
+      <td>12</td>
+      <td>C</td>
+    </tr>
+  </tbody>
+  <tbody>
+    <tr>
+      <td>45141</td>
+      <td>2821</td>
+      <td>5</td>
+      <td>5</td>
+    </tr>
+  </tbody>
+  <tbody>
+    <tr>
+      <td>2821</td>
+      <td>176</td>
+      <td>5</td>
+      <td>5</td>
+    </tr>
+  </tbody>
+  <tbody>
+    <tr>
+      <td>176</td>
+      <td>11</td>
+      <td>0</td>
+      <td>0</td>
+    </tr>
+  </tbody>
+  <tbody>
+    <tr>
+      <td>11</td>
+      <td>0</td>
+      <td>11</td>
+      <td>B</td>
+    </tr>
+  </tbody>
+</table>
+
+<p>In a program implementation, we need to reverse the result to get the digits 
+in the expected order. This code is in x86 assembly (NASM syntax) for Linux.</p>
+
+<pre><code>%define RADIX 16                   ; This can be any value between 2 and 16
+%define INPUT 2958409950
+
+    section .data
+
+alphabet:    db "0123456789abcdef"
+
+    section .bss
+
+output:      resb 33               ; Allocate the maximum number of digits 
+                                   ; that a string can have, which is 32 in 
+                                   ; base 2, plus an extra newline character
+    section .text
+
+    global _start
+_start:
+    mov      ebx, RADIX
+    mov      eax, INPUT
+
+    lea      edi, [output]         
+    lea      esi, [alphabet]
+
+    push     edi                   ; Save output buffer address for later use
+    xor      ecx, ecx              ; Use ecx as character counter
+
+loop:
+    xor      edx, edx              ; Divide eax by radix. After executing
+    div      ebx                   ; this instruction, edx will contain the 
+                                   ; remainder 
+
+    mov      dl, [esi + edx]       ; Write the character which corresponds to
+    mov      [edi], dl             ; the remainder to buffer and then increment
+    inc      edi                   ; address pointer
+
+    inc      ecx                   ; Increment character counter
+
+    or       eax, eax              ; Check if quotient is zero
+    jnz      loop                  ; If not, repeat again
+
+    pop      esi                   ; Restore output string address to esi
+
+    mov BYTE [edi], 0x0a           ; Append a newline character
+
+    inc      ecx
+    push     ecx                   ; Store string length for later use
+
+reverse:                           ; Reverse the string
+    dec      edi
+    mov      al, [edi]
+    mov      ah, [esi]
+    mov      [edi], ah
+    mov      [esi], al
+    inc      esi
+
+    cmp      esi, edi
+    jl       reverse
+
+    pop      edx                   ; Put character count in edx
+
+    lea      ecx, [output] 
+    mov      ebx, 1                ; file descriptor (stdout)
+    mov      eax, 4                ; syscall 4 = sys_write
+    int      0x80
+
+    xor      ebx, ebx              ; exit status 0
+    mov      eax, 1                ; syscall 1 = sys_exit
+    int      0x80
+</code></pre>
+
+<p><em>Tip:</em> Paste this code into an online code execution environment, 
+for example <a href="https://www.tutorialspoint.com/compile_assembly_online.php">https://www.tutorialspoint.com/compile_assembly_online.php</a> to
+see tre result.</p>
+
+<p>In the next part of this series, we will take a more detailed look at integer 
+representation in the binary numeral system.</p>
+
+</body>
+</html>
