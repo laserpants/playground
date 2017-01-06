@@ -116,7 +116,7 @@ Then $$ rS_n - S_n = S_n(r - 1) = (r + r^2 + \dots + r^n) - (1 + r + r^2 + \dots
 We will now state the basis representation theorem in more formal terms.
 
 *Theorem.* Given a base $$b$$, where $$b$$ is any integer greater than one, and 
-a natural number $$n$$, there exists integers $$d_0, d_1, \dots, d_q \; (0 \le d_i < b)$$ 
+a natural number $$n$$, there exist integers $$d_0, d_1, \dots, d_q \; (0 \le d_i < b)$$ 
 such that $$n = d_q b^q + \cdots + d_2 b^2 + d_1 b^1 + d_0$$ and $$d_q \ne 0$$. 
 We call this the representation of $$n$$ in base $$b$$. Furthermore, this 
 representation is unique.
