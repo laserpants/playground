@@ -57,7 +57,7 @@ $$
 n = a_q b^q + \cdots + a_2 b^2 + a_1 b^1 + a_0 \text{ where } 0 \le a_i < b \text{ for all $ i $, and $ a_q \ne 0 $}.
 $$
 
-The length of this representation is $$q + 1$$, for some integer $$q \ge 0$$. 
+The length of this sequence is $$q + 1$$, for some integer $$q \ge 0$$. 
 To express $$q $$ in terms of $$n$$, first consider the real number $$x$$ such 
 that $$b^x = n$$. Then $$x = \log_b n$$, and $$q$$ is the largest integer less 
 than or equal to $$x$$. This mapping is known as the *floor* function and we 
