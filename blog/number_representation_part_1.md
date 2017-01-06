@@ -5,7 +5,7 @@ stored and processed in computers and other electronic devices. An important
 part of this is the use of *numeral systems*, such as the binary and hexadecimal 
 number formats. Numeral systems (also called number systems) are methods and 
 notation for expressing numbers in concrete form, including formats used for 
-internal representation of numeric values in computer memory. 
+internal processing of numeric values in computer memory. 
 
 ### Numbers and numerals
 
