@@ -2,12 +2,12 @@
 
 In this series of posts, we will look at the different ways that numbers are 
 stored and processed in computers and other electronic devices. An important 
-part of this is the role of various data representation schemes -- formats used 
-for internal processing of numeric values in computer memory. We typically 
-think of digital data as being represented in binary form. The binary and 
-decimal systems are both positional systems. This post focuses on some of the 
-common characteristics of this type of system, and how numbers can be expressed 
-in different bases.
+part of this is the role of data encoding schemes -- formats used for internal 
+processing of numeric values in computer memory. We typically think of digital 
+data as being represented in binary form. The binary and decimal systems are 
+both positional systems. This post focuses on some of the common 
+characteristics of this type of system, and how numbers can be expressed in 
+different bases.
 
 Although we sometimes use the two terms interchangeably, numbers and numerals are different 
 things. A *numeral* is a symbolic representation of a number. Numbers are 
@@ -28,13 +28,24 @@ characteristics of these systems.
 <!-- <img src="images/roman.jpg" style="width:300px" /> 
 *Roman numerals - an example of a non-positional numeral system.* -->
 
-<img src="images/maya.png" />
-
-*The Maya civilization used a base 20 (vigesimal) numeral system.*
-
-<img src="images/heh.png" style="width:200px" />
-
-*In the ancient Egyptian hieroglyphic numeral system, the god <a href="https://en.wikipedia.org/wiki/Heh_(god)">Heh</a> symbolized one million.*
+<table style="margin: 0 250px;">
+<tr>
+<td style="text-align: center;">
+  <img src="images/maya.png" style="height: 200px;" />
+</td>
+<td style="text-align: center;">
+  <img src="images/heh.png" style="height: 200px;" />
+</td>
+</tr>
+<tr>
+<td style="text-align: center; padding-top: 10px;">
+  <i>The Maya civilization used a base 20 (vigesimal) numeral system.</i>
+</td>
+<td style="text-align: center; padding-top: 10px;">
+  <i>In the ancient Egyptian hieroglyphic numeral system, the god <a href="https://en.wikipedia.org/wiki/Heh_(god)">Heh</a> symbolized one million.</i>
+</td>
+</tr>
+</table>
 
 ### Positional numeral systems
 
