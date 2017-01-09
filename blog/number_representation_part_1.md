@@ -105,7 +105,7 @@ statement to `while ((n /= base))`.
 ### The basis representation theorem
 
 The fact that every natural number is uniquely identified in the way we have 
-just described, is established by a result in number theory, known as the 
+just described, is established by a result in number theory known as the 
 *basis representation theorem*. To prove this theorem, we first need the 
 following lemma.
 
