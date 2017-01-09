@@ -7,15 +7,20 @@ number formats. Numeral systems (also called number systems) are methods and
 notation for expressing numbers in concrete form, including formats used for 
 internal processing of numeric values in computer memory. 
 
-### Numbers and numerals
+<!-- <img src="images/roman.jpg" style="width:300px" /> 
+*Roman numerals - an example of a non-positional numeral system.* -->
+
+<img src="images/maya.png" />
+
+*The Maya civilization used a base 20 (vigesimal) numeral system.*
+
+Although we sometimes use the two terms interchangeably, numbers and numerals
+are different things. A *numeral* is a symbolic representation of a number. 
+Numbers are abstract constructs, and numerals are the names and symbols which 
+denote them. 
 
 > *"One could say that the difference between a number and its numeral is like 
 the difference between a person and her name."* &mdash; Unknown source
-
-Although we sometimes use the two terms interchangeably, there is a distinction 
-between the concept of a number and a numeral. A *numeral* is a symbolic 
-representation of a number. Numbers are abstract constructs, and numerals are 
-the names and symbols which denote them. 
 
 <img src="images/heh.png" style="width:200px" />
 
