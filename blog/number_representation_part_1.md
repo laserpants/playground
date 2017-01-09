@@ -5,7 +5,7 @@ stored and processed in computers and other electronic devices. An important
 part of this is the role of data encoding schemes -- formats used for internal 
 processing of numeric values in computer memory. We typically think of digital 
 data as being represented in binary form. The binary and decimal systems are 
-both positional systems. This post focuses on some of the common 
+both positional systems, and this post focuses on some of the common 
 characteristics of this type of system, and how numbers can be expressed in 
 different bases.
 
