@@ -2,10 +2,28 @@
 
 In this series of posts, we will look at the different ways that numbers are 
 stored and processed in computers and other electronic devices. An important 
-part of this is the use of numeric formats, such as the binary and hexadecimal 
-numbers. *Numeral systems* (also called number systems) are methods and 
-notation for expressing numbers in concrete form, including formats used for 
-internal processing of numeric values in computer memory. 
+part of this is the role of various data representation schemes -- formats used 
+for internal processing of numeric values in computer memory. We typically 
+think of digital data as being represented in binary form. The binary and 
+decimal systems are both positional systems. In this post, we will look at some 
+of the characteristics of this type of system, and how numbers can be expressed 
+in different bases.
+
+Although we sometimes use the two terms interchangeably, numbers and numerals are different 
+things. A *numeral* is a symbolic representation of a number. Numbers are 
+abstract concepts, and numerals are the names and symbols which denote them. 
+*Numeral systems* (also called number systems) are methods and notation for 
+expressing numbers in concrete form -- that is, as numerals.  
+
+<!--
+> *"One could say that the difference between a number and its numeral is like 
+the difference between a person and her name."* &mdash; Unknown source
+-->
+
+<!--
+In this post, and the following, we will look at some of the 
+characteristics of these systems.
+-->
 
 <!-- <img src="images/roman.jpg" style="width:300px" /> 
 *Roman numerals - an example of a non-positional numeral system.* -->
@@ -13,14 +31,6 @@ internal processing of numeric values in computer memory.
 <img src="images/maya.png" />
 
 *The Maya civilization used a base 20 (vigesimal) numeral system.*
-
-Although we sometimes use the two terms interchangeably, numbers and numerals
-are different things. A *numeral* is a symbolic representation of a number. 
-Numbers are abstract constructs, and numerals are the names and symbols which 
-denote them. 
-
-> *"One could say that the difference between a number and its numeral is like 
-the difference between a person and her name."* &mdash; Unknown source
 
 <img src="images/heh.png" style="width:200px" />
 
@@ -47,9 +57,9 @@ Numeral systems of this kind are called *positional*. Each digit is assigned a
 weight, based on its position in the sequence. Another property, shared by all 
 the numeral systems we will consider here, is that they have a 
 *uniform base*, i.e., the same base is used in all positions of the string. 
-Let $$n = d_q ... d_2 d_1 d_0$$ be an arbitrary natural number. In other words, 
-$$d_i$$ is the digit at position $$i$$ in the decimal string representation of 
-$$n$$. Then 
+Let $$d_q ... d_2 d_1 d_0$$ denote an arbitrary natural number $$n$$. In other 
+words, $$d_i$$ is the digit at position $$i$$ in the decimal string 
+representation of $$n$$. Then 
 
 $$ 
 n = d_q 10^q + \cdots + d_2 10^2 + d_1 10^1 + d_0. 
