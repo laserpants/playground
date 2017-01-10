@@ -2,11 +2,11 @@
 
 In this series of posts, we will look at the different ways that numbers are 
 stored and processed in computers and other electronic devices. An important 
-part of this is the various data formats used for internal processing of 
+part of this is the role of data formats used for internal processing of 
 numeric values in computer memory. We typically think of digital data as being 
 represented in binary form. The binary and decimal systems are both positional 
-systems, and this post focuses on some of the common characteristics of this 
-type of system, and how numbers can be expressed in different bases.
+systems, and this first post will focus on some of the common characteristics 
+of this type of system, and how numbers can be expressed in different bases.
 
 Although we sometimes use the two terms interchangeably, numbers and numerals are different 
 things. A *numeral* is a symbolic representation of a number. Numbers are 
