@@ -1,18 +1,32 @@
 # Number representation in digital electronics -- Part 1: Numerical bases
 
+<!--
 In this series of posts, we will look at the different ways that numbers are 
 stored and processed in computers and other electronic devices. An important 
-part of this is the role of data formats used for internal processing of 
-numeric values in computer memory. We typically think of digital data as being 
-represented in binary form. The binary and decimal systems are both positional 
-systems, and this first post will focus on some of the common characteristics 
-of this type of system, and how numbers can be expressed in different bases.
+part of this is the role of data representation formats used for internal 
+processing of numeric values in computer memory. We typically think of digital 
+data as being in binary form. The binary and decimal systems are both 
+positional systems, and this first post will focus on some of the common 
+characteristics of this type of system, and how numbers can be expressed in 
+different bases.
+-->
 
-Although we sometimes use the two terms interchangeably, numbers and numerals are different 
-things. A *numeral* is a symbolic representation of a number. Numbers are 
-abstract concepts, and numerals are the names and symbols which denote them. 
-*Numeral systems* (also called number systems) are methods and notation for 
-expressing numbers in concrete form -- that is, as numerals.  
+In this series of posts, we will look at the different ways that numbers are 
+stored and processed in computers and other electronic devices, as well as 
+some specific data formats used to represent numeric values in computer memory. 
+An important part of this is the binary numeral system, since we typically 
+think of digital data as being in binary form. The binary and decimal systems 
+are both positional systems, and this first post will focus on some of the 
+common characteristics of this type of system, and how numbers can be expressed 
+in different bases.
+
+### The role of numerals
+
+Although we sometimes use the two terms interchangeably, numbers and numerals 
+are different things. A *numeral* is a symbolic representation of a number. 
+Numbers are abstract concepts, and numerals are the names and symbols which 
+denote them. *Numeral systems* (also called number systems) are formal methods 
+and notation for expressing numbers in concrete form -- that is, as numerals.  
 
 <!--
 > *"One could say that the difference between a number and its numeral is like 
@@ -27,14 +41,14 @@ characteristics of these systems.
 <!-- <img src="images/roman.jpg" style="width:300px" /> 
 *Roman numerals - an example of a non-positional numeral system.* -->
 
-<table style="margin: 0 250px;">
+<table style="width: 100%;">
 <tr>
-<td style="text-align: center;">
-  <img src="images/maya.png" style="height: 200px;" />
-</td>
-<td style="text-align: center;">
-  <img src="images/heh.png" style="height: 200px;" />
-</td>
+  <td style="text-align: center; width: 50%;">
+    <img src="images/maya.png" style="height: 200px;" />
+  </td>
+  <td style="text-align: center; width: 50%;">
+    <img src="images/heh.png" style="height: 200px;" />
+  </td>
 </tr>
 <tr>
 <td style="text-align: center; padding-top: 10px;">
@@ -151,7 +165,7 @@ for every $$n$$, and then that this representation must be unique.
 
 #### Proof of existence
 
-The argument is by induction on $$n$$ and the statement we would like to prove is 
+The argument is by induction on $$n$$ and the statement we would like to prove is the following:
 
 $$
 P(n) \equiv \forall b \in \mathbb{Z} \; (b > 1), \exists q \in \mathbb{Z} \; (q \ge 0), 
@@ -209,7 +223,7 @@ of $$k + 1$$. Otherwise, if $$j > 0$$, then
   
 Since these cases are exhaustive, we find that $$P(k) \implies P(k + 1)$$, 
 which proves existence for all $$n \ge 1$$. Note that it is also possible to 
-represent $$0$$ in any base as itself.
+represent $$0$$ in any base, as itself.
 
 #### Proof of uniqueness
 
@@ -245,8 +259,7 @@ $$
 That is, $$c_j - d_j \in \{ zb \;|\; z \in \mathbb{Z} \}$$. 
 But since $$0 \le c_j, d_j < b$$, it must be that $$c_j - d_j = 0$$, 
 which contradicts our initial assumption that $$c_j \ne d_j$$. 
-This concludes the proof.
-$$\tag*{$\blacksquare$}$$
+This concludes the proof. $$\tag*{$\blacksquare$}$$
 
 ### Convert an integer to a string
 
