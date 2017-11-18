@@ -1,0 +1,29 @@
+[
+  {
+    "config": {
+      "Image": "test/test1"
+    },
+    "build": "tmp1"
+  }, 
+  {
+    "config": {
+      "Image": "test/test2"
+    },
+    "build": "tmp2"
+  }, 
+  {
+    "config": {
+      "Image": "alpine:latest"
+    }
+  }, 
+  {
+    "config": {
+      "Image": "python:2.7.12"
+    }
+  }, 
+  {
+    "config": {
+      "Image": "mysql:5.7"
+    }
+  }
+]
