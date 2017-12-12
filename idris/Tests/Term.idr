@@ -11,7 +11,7 @@ testParseTerm input match =
     else putStrLn ("Error: " ++ show rhs ++ " /= " ++ match)
 where
   rhs : Either String String
-  rhs = map show (Lightyear.Strings.parse term input)
+  rhs = map show (parse term input)
 
 export
 tests : IO ()
