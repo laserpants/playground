@@ -27,3 +27,4 @@ tests = do
   testParseTerm "~z.a b z" "~z.((a b) z)"
   testParseTerm "~y.~z.a b z" "~y.~z.((a b) z)"
   testParseTerm "(~x.x)" "~x.x"
+  testParseTerm "wat dat" "(wat dat)"

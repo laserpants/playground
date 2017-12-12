@@ -1,0 +1,6 @@
+package hello
+
+modules = Main, Term, Tests.Term
+executable = main
+main = Main
+opts = "-p lightyear"
