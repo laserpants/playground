@@ -3,6 +3,9 @@ module Expr
 import Term 
 
 ||| De Bruijn-indexed intermediate lambda term data type representation.
+||| 
+||| In this scheme, the two alpha equivalent terms ~x.x and ~y.y are both 
+||| represented in canonical form, as `ELam (Bound 0)`.
 public export data Expr = 
   ||| Bound variable (depth indexed)
   Bound Nat |
