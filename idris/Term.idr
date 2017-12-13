@@ -4,7 +4,7 @@ import Lightyear
 import Lightyear.Char
 import Lightyear.Strings
 
-export data Term
+public export data Term
   = Var String         -- Variable
   | App Term Term      -- Application
   | Lam String Term    -- Lambda abstraction
