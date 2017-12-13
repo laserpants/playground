@@ -23,6 +23,15 @@ where
   rhs : Either String String
   rhs = map show (parse term input)
 
+testShowExpr : String -> String -> IO ()
+testShowExpr input match =
+  if lhs == Right match
+    then putStrLn "\x2714 Ok"
+    else putStrLn ("Error: " ++ input ++ " /= " ++ match)
+where
+  lhs : Either String String
+  lhs = show . toExpr <$> parse term input
+
 export tests : IO ()
 tests = do
   --
@@ -46,3 +55,9 @@ tests = do
   testToExpr "a b" (EApp (Free "a") (Free "b"))
   testToExpr "(~x.(~x.(~x.x x) x) x)" (ELam (EApp (ELam (EApp (ELam (EApp (Bound 0) (Bound 0))) (Bound 0))) (Bound 0)))
   testToExpr "(~x.(~y.x y) x)" (ELam (EApp (ELam (EApp (Bound 1) (Bound 0))) (Bound 0)))
+  --
+  testShowExpr "~x.x" "λ 0"
+  testShowExpr "~y.y" "λ 0"
+  testShowExpr "~x.~y.y x" "λ λ (0 1)"
+  testShowExpr "a b" "(a b)"
+

@@ -16,7 +16,7 @@ export Eq Expr where
   _          == _          = False
 
 export Show Expr where
-  show (ELam elm) = "~ " ++ show elm
+  show (ELam lam) = "\x3BB " ++ show lam
   show (Free var) = var
   show (Bound  n) = show n
   show (EApp t u) = "(" ++ show t ++ " " 
