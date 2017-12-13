@@ -2,11 +2,16 @@ module Expr
 
 import Term 
 
-public export data Expr
-  = Bound Nat       -- Bound variable (depth indexed)
-  | Free String     -- Free variable
-  | EApp Expr Expr  -- Application
-  | ELam Expr       -- Lambda abstraction
+||| De Bruijn-indexed intermediate lambda term data type representation.
+public export data Expr = 
+  ||| Bound variable (depth indexed)
+  Bound Nat |
+  ||| Free variable
+  Free String |   
+  ||| Application
+  EApp Expr Expr |
+  ||| Lambda abstraction
+  ELam Expr
 
 export Eq Expr where
   (Bound a)  == (Bound b)  = a == b
@@ -22,7 +27,10 @@ export Show Expr where
   show (EApp t u) = "(" ++ show t ++ " " 
                         ++ show u ++ ")"
 
-export toExpr : Term -> Expr
+||| Translate a `Term` value to canonical `Expr` representation form, based on
+||| so called De Bruijn indexing.
+||| @t the input term
+export total toExpr : (t : Term) -> Expr
 toExpr = toE [] where
   toE : List String -> Term -> Expr
   toE ctx (Term.Lam x t) = ELam (toE new_ctx t) where new_ctx = x :: ctx
