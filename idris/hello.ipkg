@@ -1,6 +1,7 @@
 package hello
 
-modules = Main, Term, Tests.Term
-executable = main
-main = Main
+modules = Term
+        , Expr
+        , Tests.Term
+
 opts = "-p lightyear"

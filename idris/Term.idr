@@ -10,8 +10,9 @@ import Lightyear.Strings
 ||| * A lambda abstraction is a term. 
 |||
 ||| Nothing else is a term. Application is left-associative, so the term 
-||| (s t u) is equivalent to (s t) u. One often omits outermost parentheses. 
-||| In abstractions, the body extends as far to the right as possible.
+||| `(s t u)` is equivalent to `(s t) u`. One often omits outermost 
+||| parentheses. In abstractions, the body extends as far to the right as 
+||| possible.
 public export data Term =
   ||| Variable
   Var String |

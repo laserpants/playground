@@ -24,11 +24,12 @@ export Eq Expr where
   _          == _          = False
 
 export Show Expr where
-  show (ELam lam) = "\x3BB " ++ show lam
   show (Free var) = var
   show (Bound  n) = show n
-  show (EApp t u) = "(" ++ show t ++ " " 
-                        ++ show u ++ ")"
+  show (ELam lam) = "(\x3BB " ++ show lam ++ ")"
+  show (EApp s t) = case t of
+                      EApp _ _ => show s ++ " (" ++ show t ++ ")"
+                      _        => show s ++ " "  ++ show t
 
 ||| Translate a `Term` value to canonical `Expr` representation form, based on
 ||| so called De Bruijn indexing.
@@ -63,4 +64,6 @@ substitute i term e =
 ||| @t the term to apply the reduction to
 export total reduce : (t : Expr) -> Expr
 reduce (EApp (ELam t) s) = substitute 0 t s 
-reduce term = term
+reduce (EApp t u)        = EApp (reduce t) (reduce u)
+reduce (ELam lam)        = ELam (reduce lam)
+reduce term              = term
