@@ -60,8 +60,8 @@ main = do
   printLn (expr_ "(~n.~f.~x.f (n f x)) (~f.~x.x)")
   --              (λ (λ (λ 1 (2 1 0)))) (λ (λ 0))
 
-  --printLn (reduce (expr_ "(~n.~f.~x.f (n f x)) (~f.~x.x)"))
-  ---- (λ λ 1 ((λ λ 0) 1) 0) 
+  printLn (reduce (expr_ "(~n.~f.~x.f (n f x)) (~f.~x.x)"))
+  --              (λ (λ 1 ((λ (λ 0)) 1 0)))
 
   --printLn (reduce (reduce (expr_ "(~n.~f.~x.f (n f x)) (~f.~x.x)")))
   ---- (λ λ 1 ((λ 0) 0)) 
