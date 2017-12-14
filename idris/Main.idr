@@ -33,7 +33,9 @@ church_3 = expr_ "~f.~x.f (f (f x))"
 
 main : IO ()
 main = do 
-  -- tests
+  --
+  tests
+  --
   printLn $ testReduce "(~x.x) v" (Free "v") 
                         -- (\x.x)v       ==> v
   printLn $ testReduce "(~x.~y.x) v" (ELam (Free "v")) 
@@ -58,40 +60,17 @@ main = do
                         -- (\x.\x.#1)[ 0 := v ] ==> \x.\x.#3
 
   printLn (expr_ "(~n.~f.~x.f (n f x)) (~f.~x.x)")
-  --              (λ (λ (λ 1 (2 1 0)))) (λ (λ 0))
+  -- (λ (λ (λ 1 (2 1 0)))) (λ (λ 0))
 
   printLn (reduce (expr_ "(~n.~f.~x.f (n f x)) (~f.~x.x)"))
-  --              (λ (λ 1 ((λ (λ 0)) 1 0)))
+  -- (λ (λ 1 ((λ (λ 0)) 1 0)))
 
-  --printLn (reduce (reduce (expr_ "(~n.~f.~x.f (n f x)) (~f.~x.x)")))
-  ---- (λ λ 1 ((λ 0) 0)) 
+  printLn (reduce (reduce (expr_ "(~n.~f.~x.f (n f x)) (~f.~x.x)")))
+  -- (λ (λ 1 ((λ 0) 0)))
 
-  --printLn (reduce (reduce (reduce (expr_ "(~n.~f.~x.f (n f x)) (~f.~x.x)"))))
-  -- (λ λ 1 0) 
+  printLn (reduce (reduce (reduce (expr_ "(~n.~f.~x.f (n f x)) (~f.~x.x)"))))
+  -- (λ (λ 1 0))
 
-  --printLn (reduce (reduce (expr_ "(~n.~f.~x.f (n f x)) (~f.~x.x)")))
-
-  --printLn (expr_ "(~n.~f.~x.f (n f x)) (~f.~x.x)")
-
--- (λ λ λ (1 ((2 1) 0))) (λ λ 0)
-
--- (λz.λy.λx.(y ((z y) x))) (λa.λb.b)
--- ========= succ ========= === 0 ===
--- (λy.λx.(y (((λa.λb.b) y) x))) 
-
--- (λ λ (1 ((λ λ 0 1) 0))) 
-
---  
-
-  --printLn (toExpr <$> parseTerm "(~y.~x.x y)")
-  --printLn (toExpr <$> parseTerm "(~y.(~x.x) y)")
-
--- (~n.~f.~x.f (n f x)) (~f.~x.x)
--- (~n.~f.~x.f ((~f.~x.x f) x)) 
-
-  --printLn $ reduce (EApp succ church_0)
-  --printLn $ reduce (reduce (EApp succ church_0))
-----  printLn $ church_1
-
--- (λ λ λ (1 ((2 1) 0))) (λ λ 0)
+  printLn (reduce (reduce (reduce (reduce (expr_ "(~n.~f.~x.f (n f x)) (~f.~x.x)")))))
+  -- (λ (λ 1 0))
 

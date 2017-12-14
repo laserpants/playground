@@ -32,6 +32,18 @@ where
   lhs : Either String String
   lhs = show . toExpr <$> parse term input
 
+fromRight : Either a b -> b
+fromRight (Right r) = r
+
+expr_ : String -> Expr 
+expr_ = fromRight . map toExpr . parseTerm 
+
+testExprEq : Expr -> Expr -> IO ()
+testExprEq x y =
+  if x == y
+    then putStrLn "\x2714 Ok"
+    else putStrLn ("Error: " ++ show x ++ " /= " ++ show y)
+
 export tests : IO ()
 tests = do
   --
@@ -56,8 +68,17 @@ tests = do
   testToExpr "(~x.(~x.(~x.x x) x) x)" (ELam (EApp (ELam (EApp (ELam (EApp (Bound 0) (Bound 0))) (Bound 0))) (Bound 0)))
   testToExpr "(~x.(~y.x y) x)" (ELam (EApp (ELam (EApp (Bound 1) (Bound 0))) (Bound 0)))
   --
-  testShowExpr "~x.x" "λ 0"
-  testShowExpr "~y.y" "λ 0"
-  testShowExpr "~x.~y.y x" "λ λ (0 1)"
-  testShowExpr "a b" "(a b)"
+  testShowExpr "~x.x" "(λ 0)"
+  testShowExpr "~y.y" "(λ 0)"
+  testShowExpr "~x.~y.y x" "(λ (λ 0 1))"
+  testShowExpr "a b" "a b"
+  testShowExpr "(a b) c" "a b c"
+  testShowExpr "a (b c)" "a (b c)"
+  testShowExpr "a b c d" "a b c d"
+  testShowExpr "((a b) c) d" "a b c d"
+  testShowExpr "a (b (c d))" "a (b (c d))"
+  testShowExpr "a (b c) d" "a (b c) d"
+  testShowExpr "a (b c d)" "a (b c d)"
+  --
+  testExprEq (expr_ "~f.~x.f x") (reduce (reduce (reduce (expr_ "(~n.~f.~x.f (n f x)) (~f.~x.x)"))))
 
