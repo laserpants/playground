@@ -42,3 +42,25 @@ toExpr = toE [] where
     case elemIndex var ctx of
       Just ix => Bound ix
       Nothing => Free var
+
+||| Perform the substitution `t[ i := e ]`.
+||| @i a variable index
+||| @t the original term
+||| @e an expression that the bound variable at depth 'i' will be replaced with
+export total
+substitute : (i : Nat) 
+          -> (t : Expr)
+          -> (e : Expr) 
+          -> Expr
+substitute i term e = 
+  case term of
+    (Bound n)    => if n == i then e else Bound n
+    (EApp e1 e2) => EApp (substitute i e1 e) (substitute i e2 e)
+    (ELam e1)    => ELam (substitute (succ i) e1 e)
+    (Free _)     => term
+
+||| Beta-reduction, defined in terms of 'substitute'.
+||| @t the term to apply the reduction to
+export total reduce : (t : Expr) -> Expr
+reduce (EApp (ELam t) s) = substitute 0 t s 
+reduce term = term
