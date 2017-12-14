@@ -44,10 +44,29 @@ testExprEq x y =
     then putStrLn "\x2714 Ok"
     else putStrLn ("Error: " ++ show x ++ " /= " ++ show y)
 
+testReduce : String -> Expr -> IO ()
+testReduce input exp = 
+  if lhs == Right exp
+    then putStrLn "\x2714 Ok"
+    else putStrLn ("Error: " ++ input ++ " /= " ++ show lhs)
+where
+  lhs : Either String Expr
+  lhs = map (reduce . toExpr) (parseTerm input)
+
+testSubst : Nat -> Expr -> Expr -> Expr -> IO ()
+testSubst i term e e1 = 
+  if lhs == e1
+    then putStrLn "\x2714 Ok"
+    else putStrLn ("Error: " ++ show e1 ++ " /= " ++ show lhs)
+where
+  lhs : Expr
+  lhs = substitute i term e
+
 export tests : IO ()
 tests = do
   --
-  testParseTerm "x x" "(x y)"
+  testParseTerm "x y" "(x y)"
+  testParseTerm "x x" "(x x)"
   testParseTerm "~x.x" "~x.x"
   testParseTerm "~x.(x x)" "~x.(x x)"
   testParseTerm "(x x)(x x)" "((x x) (x x))"
@@ -81,4 +100,59 @@ tests = do
   testShowExpr "a (b c d)" "a (b c d)"
   --
   testExprEq (expr_ "~f.~x.f x") (reduce (reduce (reduce (expr_ "(~n.~f.~x.f (n f x)) (~f.~x.x)"))))
+  --
+  testReduce "(~x.x) v" (Free "v") 
+              -- (\x.x)v       ==> v
+  testReduce "(~x.~y.x) v" (ELam (Free "v")) 
+              -- (\x.\y.x)v    ==> \y.v
+  testReduce "(~x.~y.~z.x) v" (ELam (ELam (Free "v"))) 
+              -- (\x.\y.\z.x)v ==> \y.\z.v
+  testReduce "(~x.~y.~z.y) v" (ELam (ELam (Bound 1))) 
+              -- (\x.\y.\z.y)v ==> \y.\z.y
+  testReduce "(~x.~y.~z.z) v" (ELam (ELam (Bound 0))) 
+              -- (\x.\y.\z.z)v ==> \y.\z.z
+  testReduce "(~x.~x.~x.x) y" (ELam (ELam (Bound 0))) 
+              -- (\x.\x.\x.x)y ==> \x.\x.x
+  testReduce "(~x.v) v" (Free "v") 
+              -- (\x.v)v       ==> v
+  testReduce "(u v)" (EApp (Free "u") (Free "v"))
+              -- u v           ==> u v
+  testSubst 0 (ELam (ELam (Bound 2))) (Free "v") (ELam (ELam (Free "v")))
+              -- (\x.\x.#2)[ 0 := v ] ==> \x.\x.v
+  testSubst 0 (ELam (ELam (Bound 3))) (Free "v") (ELam (ELam (Bound 3)))
+              -- (\x.\x.#3)[ 0 := v ] ==> \x.\x.#3
+  testSubst 0 (ELam (ELam (Bound 3))) (Free "v") (ELam (ELam (Bound 3)))
+              -- (\x.\x.#1)[ 0 := v ] ==> \x.\x.#3
+  --
+  -- SUCC 0
+  --
+  let succ_0 = expr_ "(~n.~f.~x.f (n f x)) (~f.~x.x)"
+  -- (λ (λ (λ 1 (2 1 0)))) (λ (λ 0))
+  testExprEq (reduce succ_0) (expr_ "(~f.~x.f ((~g.~y.y) f x))")
+  -- (λ (λ 1 ((λ (λ 0)) 1 0)))
+  testExprEq (reduce (reduce succ_0)) (expr_ "(~f.~x.f ((~y.y) x))")
+  -- (λ (λ 1 ((λ 0) 0)))
+  testExprEq (reduce (reduce (reduce succ_0))) (expr_ "(~f.~x.f x)")
+  -- (λ (λ 1 0))
+  -- No more reduction possible
+  testExprEq (reduce (reduce (reduce (reduce succ_0)))) (expr_ "(~f.~x.f x)")
+  -- (λ (λ 1 0))
+  -- 
+  -- PLUS 2 3
+  -- 
+  let plus_2_3 = expr_ "(~m.~n.~f.~x.m f (n f x)) (~f.~x.f (f x)) (~f.~x.f (f (f x)))"
+  -- (λ (λ (λ (λ 3 1 (2 1 0))))) (λ (λ 1 (1 0))) (λ (λ 1 (1 (1 0))))
+  testExprEq (reduce plus_2_3) (expr_ "(~n.~f.~x.(~f.~x.f (f x)) f (n f x)) (~f.~x.f (f (f x)))")
+  -- (λ (λ (λ (λ (λ 1 (1 0))) 1 (2 1 0)))) (λ (λ 1 (1 (1 0))))
+  testExprEq (reduce (reduce plus_2_3)) (expr_ "(~f.~x.(~f.~x.f (f x)) f ((~f.~x.f (f (f x))) f x))")
+  -- (λ (λ (λ (λ 1 (1 0))) 1 ((λ (λ 1 (1 (1 0)))) 1 0)))
+  testExprEq (reduce (reduce (reduce plus_2_3))) (expr_ "(~d.~c.(~a.c (c a)) ((~b.c (c (c b))) c))")
+  -- (λ (λ (λ 1 (1 0)) ((λ 1 (1 (1 0))) 0)))
+  testExprEq (reduce (reduce (reduce (reduce plus_2_3)))) (expr_ "(~d.~c.(d (d ((~b.c (c (c b))) c))))")
+  -- (λ (λ 1 (1 ((λ 1 (1 (1 0))) 0))))
+  testExprEq (reduce (reduce (reduce (reduce (reduce plus_2_3))))) (expr_ "(~d.~c.d (d (d (d (d c)))))")
+  -- (λ (λ 1 (1 (1 (1 (1 0))))))
+  -- No more reduction possible
+  testExprEq (reduce (reduce (reduce (reduce (reduce (reduce plus_2_3)))))) (expr_ "(~d.~c.d (d (d (d (d c)))))")
+  -- (λ (λ 1 (1 (1 (1 (1 0))))))
 

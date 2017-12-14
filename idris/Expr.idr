@@ -27,9 +27,10 @@ export Show Expr where
   show (Free var) = var
   show (Bound  n) = show n
   show (ELam lam) = "(\x3BB " ++ show lam ++ ")"
-  show (EApp s t) = case t of
-                      EApp _ _ => show s ++ " (" ++ show t ++ ")"
-                      _        => show s ++ " "  ++ show t
+  show (EApp s t) = 
+    case t of
+      EApp _ _ => show s ++ " (" ++ show t ++ ")"
+      _        => show s ++ " "  ++ show t
 
 ||| Translate a `Term` value to canonical `Expr` representation form, based on
 ||| so called De Bruijn indexing.
@@ -60,7 +61,7 @@ substitute i term e =
     (ELam e1)    => ELam (substitute (succ i) e1 e)
     (Free _)     => term
 
-||| Beta-reduction, defined in terms of 'substitute'.
+||| Beta-reduction in /normal order/, defined in terms of 'substitute'.
 ||| @t the term to apply the reduction to
 export total reduce : (t : Expr) -> Expr
 reduce (EApp (ELam t) s) = substitute 0 t s 
