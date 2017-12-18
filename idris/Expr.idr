@@ -32,8 +32,8 @@ export Show Expr where
       EApp _ _ => show s ++ " (" ++ show t ++ ")"
       _        => show s ++ " "  ++ show t
 
-||| Translate a `Term` value to canonical `Expr` representation form, based on
-||| so called De Bruijn indexing.
+||| Translate a `Term` value to a canonical `Expr` representation, using so 
+||| called De Bruijn indexing.
 ||| @t the input term
 export total toExpr : (t : Term) -> Expr
 toExpr = toE [] where
