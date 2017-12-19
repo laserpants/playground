@@ -67,16 +67,16 @@ tests = do
   --
   testParseTerm "x y" "(x y)"
   testParseTerm "x x" "(x x)"
-  testParseTerm "~x.x" "~x.x"
-  testParseTerm "~x.(x x)" "~x.(x x)"
+  testParseTerm "~x.x" "(~x.x)"
+  testParseTerm "~x.(x x)" "(~x.(x x))"
   testParseTerm "(x x)(x x)" "((x x) (x x))"
   testParseTerm "(((x y) z) a)" "(((x y) z) a)"
   testParseTerm "(x (y (z a)))" "(x (y (z a)))"
   testParseTerm "z" "z"
   testParseTerm "(a b) z" "((a b) z)"
-  testParseTerm "~z.a b z" "~z.((a b) z)"
-  testParseTerm "~y.~z.a b z" "~y.~z.((a b) z)"
-  testParseTerm "(~x.x)" "~x.x"
+  testParseTerm "~z.a b z" "(~z.((a b) z))"
+  testParseTerm "~y.~z.a b z" "(~y.(~z.((a b) z)))"
+  testParseTerm "(~x.x)" "(~x.x)"
   testParseTerm "wat dat" "(wat dat)"
   --
   testToExpr "~x.x" (ELam (Bound 0))
