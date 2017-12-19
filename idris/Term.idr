@@ -23,9 +23,8 @@ public export data Term =
 
 export Show Term where
   show (Var var) = var
-  show (App t u) = "(" ++ show t ++ " "
-                       ++ show u ++ ")"
-  show (Lam x t) = "~" ++ x ++ "." ++ show t
+  show (Lam x t) = "(~" ++ x ++ "." ++ show t ++ ")"
+  show (App t u) = "("  ++ show t ++ " " ++ show u ++ ")"
 
 name : Parser String
 name = do
