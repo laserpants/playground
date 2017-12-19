@@ -29,7 +29,9 @@ export Show Term where
 
 name : Parser String
 name = do
-  let name = !letter :: !(many alphaNum)
+  head <- letter
+  tail <- many alphaNum
+  let name = head :: tail
   pure (pack name)
 
 ||| Lambda abstraction parser. 
