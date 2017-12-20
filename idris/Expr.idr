@@ -24,13 +24,11 @@ export Eq Expr where
   _          == _          = False
 
 export Show Expr where
-  show (Free var) = var
-  show (Bound  n) = show n
-  show (ELam lam) = "(\x3BB " ++ show lam ++ ")"
-  show (EApp s t) = 
-    case t of
-      EApp _ _ => show s ++ " (" ++ show t ++ ")"
-      _        => show s ++ " "  ++ show t
+  show (Bound a)  = "Bound "  ++ show a 
+  show (Free  a)  = "Free \"" ++ show a ++ "\""
+  show (EApp t u) = "EApp ("  ++ show t ++ ") (" 
+                              ++ show u ++ ")"
+  show (ELam t)   = "ELam ("  ++ show t ++ ")"
 
 ||| Translate a `Term` value to a canonical `Expr` representation, using so 
 ||| called De Bruijn indexing.
