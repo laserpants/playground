@@ -33,7 +33,8 @@ export Show Expr where
 ||| Translate a `Term` value to a canonical `Expr` representation, using so 
 ||| called De Bruijn indexing.
 ||| @t the input term
-export total toExpr : (t : Term) -> Expr
+export total 
+toExpr : (t : Term) -> Expr
 toExpr = toE [] where
   toE : List String -> Term -> Expr
   toE ctx (Term.Lam x t) = ELam (toE new_ctx t) where new_ctx = x :: ctx
