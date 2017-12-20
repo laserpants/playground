@@ -1,5 +1,7 @@
 module Main
 
+import Term
+import Term.PrettyPrint
 import Tests.Term
 
 --church_0 : Expr 
