@@ -17,9 +17,3 @@ mutual
       Lam _ _ => "(" ++ lam term ++ ")"
       App _ _ => "(" ++ app term ++ ")"
       Var var => var
-
-export prettyPrint_ : String -> IO ()
-prettyPrint_ input = 
-  case parseTerm input of
-    Left  e => putStrLn "No parse"
-    Right t => putStrLn (pretty t)
