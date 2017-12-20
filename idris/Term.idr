@@ -22,9 +22,16 @@ public export data Term =
   Lam String Term    
 
 export Show Term where
-  show (Var var) = var
-  show (Lam x t) = "(~" ++ x ++ "." ++ show t ++ ")"
-  show (App t u) = "("  ++ show t ++ " " ++ show u ++ ")"
+  show (Var x)   = "Var \"" ++ x      ++ "\""
+  show (App t u) = "App ("  ++ show t ++ ") (" 
+                            ++ show u ++ ")"
+  show (Lam x t) = "Lam \"" ++ x      ++ "\" (" 
+                            ++ show t ++ ")"
+export Eq Term where
+  (Var x)   == (Var y)   = x == y
+  (App s t) == (App u v) = s == u && t == v
+  (Lam x t) == (Lam y u) = x == y && t == u
+  _         == _         = False
 
 name : Parser String
 name = do
