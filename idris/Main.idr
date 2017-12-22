@@ -1,5 +1,7 @@
 module Main
 
+import Expr
+import Expr.PrettyPrint
 import Term
 import Term.PrettyPrint
 import Tests.Term
@@ -17,4 +19,4 @@ import Tests.Term
 --church_3 = expr_ "~f.~x.f (f (f x))"
 
 main : IO ()
-main = tests
+main = pure () -- tests

@@ -29,7 +29,7 @@ export Show Term where
                             ++ show t ++ ")"
 export Eq Term where
   (Var x)   == (Var y)   = x == y
-  (App s t) == (App u v) = s == u && t == v
+  (App t v) == (App u w) = t == u && v == w
   (Lam x t) == (Lam y u) = x == y && t == u
   _         == _         = False
 

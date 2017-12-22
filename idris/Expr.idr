@@ -55,15 +55,27 @@ substitute : (i : Nat)
           -> Expr
 substitute i term e = 
   case term of
-    (Bound n)    => if n == i then e else Bound n
+    (Bound n) => 
+      case compare n i of
+        GT => Bound (pred n)
+        LT => Bound n
+        EQ => reindexed 0 e
     (EApp e1 e2) => EApp (substitute i e1 e) (substitute i e2 e)
     (ELam e1)    => ELam (substitute (succ i) e1 e)
     (Free _)     => term
+where
+  reindexed : Nat -> Expr -> Expr
+  reindexed j expr = 
+    case expr of 
+      (Bound n)    => Bound (if n >= j then n + i else n)
+      (EApp e1 e2) => EApp (reindexed j e1) (reindexed j e2)
+      (ELam e1)    => ELam (reindexed (succ j) e1)
+      (Free _)     => expr
 
 ||| Beta-reduction in /normal order/, defined in terms of 'substitute'.
 ||| @t the term to apply the reduction to
 export total reduce : (t : Expr) -> Expr
-reduce (EApp (ELam t) s) = substitute 0 t s 
+reduce (EApp (ELam t) s) = substitute 0 t s
 reduce (EApp t u)        = EApp (reduce t) (reduce u)
 reduce (ELam lam)        = ELam (reduce lam)
 reduce term              = term
