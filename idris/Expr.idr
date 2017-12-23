@@ -31,8 +31,6 @@ export Show Expr where
                                ++ show u ++ ")"
   show (ELam t)    = "ELam ("  ++ show t ++ ")"
 
--- @TODO rename to fromTerm
-
 ||| Translate a `Term` value to a canonical `Expr` representation, using so 
 ||| called De Bruijn indexing.
 ||| @t the input term
