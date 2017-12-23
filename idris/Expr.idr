@@ -8,7 +8,7 @@ import Term
 ||| represented in canonical form, as `ELam (Bound 0)`.
 public export data Expr = 
   ||| Bound variable (depth indexed)
-  Bound Nat |
+  Bound Nat String |
   ||| Free variable
   Free String |   
   ||| Application
@@ -17,32 +17,38 @@ public export data Expr =
   ELam Expr
 
 export Eq Expr where
-  (Bound a)  == (Bound b)  = a == b
-  (Free a)   == (Free b)   = a == b
-  (EApp t v) == (EApp u w) = t == u && v == w
-  (ELam t)   == (ELam u)   = t == u
-  _          == _          = False
+  (Bound a _) == (Bound b _) = a == b
+  (Free a)    == (Free b)    = a == b
+  (EApp t v)  == (EApp u w)  = t == u && v == w
+  (ELam t)    == (ELam u)    = t == u
+  _           == _           = False
 
 export Show Expr where
-  show (Bound a)  = "Bound "  ++ show a 
-  show (Free  a)  = "Free \"" ++ show a ++ "\""
-  show (EApp t u) = "EApp ("  ++ show t ++ ") (" 
-                              ++ show u ++ ")"
-  show (ELam t)   = "ELam ("  ++ show t ++ ")"
+  show (Bound a v) = "Bound "  ++ show a ++ " "
+                               ++ v
+  show (Free a)    = "Free \"" ++ show a ++ "\""
+  show (EApp t u)  = "EApp ("  ++ show t ++ ") (" 
+                               ++ show u ++ ")"
+  show (ELam t)    = "ELam ("  ++ show t ++ ")"
+
+-- @TODO rename to fromTerm
 
 ||| Translate a `Term` value to a canonical `Expr` representation, using so 
 ||| called De Bruijn indexing.
 ||| @t the input term
 export total 
-toExpr : (t : Term) -> Expr
-toExpr = toE [] where
-  toE : List String -> Term -> Expr
-  toE ctx (Term.Lam x t) = ELam (toE new_ctx t) where new_ctx = x :: ctx
-  toE ctx (Term.App t u) = EApp (toE ctx t) (toE ctx u)
-  toE ctx (Term.Var var) = 
+fromTerm : (t : Term) -> Expr
+fromTerm = toe [] where
+  toe : List String -> Term -> Expr
+  toe ctx (Term.Lam x t) = ELam (toe new_ctx t) where new_ctx = x :: ctx
+  toe ctx (Term.App t u) = EApp (toe ctx t) (toe ctx u)
+  toe ctx (Term.Var var) = 
     case elemIndex var ctx of
-      Just ix => Bound ix
+      Just ix => Bound ix var
       Nothing => Free var
+
+toTerm : Expr -> Term
+toTerm = ?x
 
 ||| Perform the substitution `t[ i := e ]`.
 ||| @i a variable index
@@ -55,10 +61,10 @@ substitute : (i : Nat)
           -> Expr
 substitute i term e = 
   case term of
-    (Bound n) => 
+    (Bound n v) => 
       case compare n i of
-        GT => Bound (pred n)
-        LT => Bound n
+        GT => Bound (pred n) v
+        LT => Bound n v
         EQ => reindexed 0 e
     (EApp e1 e2) => EApp (substitute i e1 e) (substitute i e2 e)
     (ELam e1)    => ELam (substitute (succ i) e1 e)
@@ -67,7 +73,7 @@ where
   reindexed : Nat -> Expr -> Expr
   reindexed j expr = 
     case expr of 
-      (Bound n)    => Bound (if n >= j then n + i else n)
+      (Bound n v)  => Bound (if n >= j then n + i else n) v
       (EApp e1 e2) => EApp (reindexed j e1) (reindexed j e2)
       (ELam e1)    => ELam (reindexed (succ j) e1)
       (Free _)     => expr
