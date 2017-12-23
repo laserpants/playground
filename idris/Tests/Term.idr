@@ -5,6 +5,93 @@ import Lightyear.Strings
 import Expr
 import Term
 
+term1_1 : Expr
+term1_1 = 
+  ELam (EApp 
+    (ELam (EApp 
+      (ELam (EApp 
+        (ELam (ELam (ELam (ELam (EApp 
+          (Bound 6) 
+          (Bound 5)))))) 
+        (ELam (Bound 0)))) 
+      (Bound 1))) 
+    (ELam (ELam (EApp 
+      (ELam (Bound 3)) 
+      (ELam (Bound 1)))))) 
+
+term1_2 : Expr
+term1_2 =
+  ELam (EApp 
+    (ELam (EApp 
+      (ELam (ELam (ELam (ELam (EApp 
+        (Bound 5) 
+        (ELam (ELam (EApp 
+          (ELam (Bound 8)) 
+          (ELam (Bound 1)))))))))) 
+      (ELam (Bound 0)))) 
+    (Bound 0))
+
+term1_3 : Expr
+term1_3 = 
+  ELam (EApp 
+    (ELam (ELam (ELam (ELam (EApp 
+      (Bound 4) 
+      (ELam (ELam (EApp 
+        (ELam (Bound 7)) 
+        (ELam (Bound 1)))))))))) 
+    (ELam (Bound 0)))
+
+term1_4 : Expr
+term1_4 = 
+  ELam (ELam (ELam (ELam (EApp 
+    (Bound 3) 
+    (ELam (ELam (EApp 
+      (ELam (Bound 6)) 
+      (ELam (Bound 1)))))))))
+
+term1_5 : Expr
+term1_5 = 
+  ELam (ELam (ELam (ELam (EApp 
+    (Bound 3) 
+    (ELam (ELam (Bound 5)))))))
+
+term2_1 : Expr
+term2_1 = 
+  EApp 
+    (ELam (ELam (EApp 
+      (Bound 1) 
+      (Bound 0)))) 
+    (ELam (ELam (EApp 
+      (Bound 1) 
+      (Bound 0))))
+
+term2_2 : Expr
+term2_2 = 
+  ELam (EApp 
+    (ELam (ELam (EApp 
+      (Bound 1) 
+      (Bound 0)))) 
+    (Bound 0))
+
+term2_3 : Expr
+term2_3 = 
+  ELam (ELam (EApp 
+    (Bound 1) 
+    (Bound 0)))
+
+test1 : IO ()
+test1 = do
+  printLn (reduce term1_1 == term1_2)
+  printLn (reduce term1_2 == term1_3)
+  printLn (reduce term1_3 == term1_4)
+  printLn (reduce term1_4 == term1_5)
+  printLn (reduce term1_5 == term1_5)
+  printLn (reduce term2_1 == term2_2)
+  printLn (reduce term2_2 == term2_3)
+
+export tests : IO ()
+tests = test1
+
 -- testShow : String -> IO ()
 -- testShow input =
 --   case parseTerm input of

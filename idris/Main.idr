@@ -19,4 +19,4 @@ import Tests.Term
 --church_3 = expr_ "~f.~x.f (f (f x))"
 
 main : IO ()
-main = pure () -- tests
+main = tests
