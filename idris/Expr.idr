@@ -16,6 +16,9 @@ public export data Expr =
   ||| Lambda abstraction
   ELam Expr String
 
+||| Compare two terms under the notion of alpha equivalence. That is, two terms
+||| are considered equal precisely when one can be converted into the other
+||| purely by renaming bound variables.
 export Eq Expr where
   (Bound a)  == (Bound b)  = a == b
   (Free a)   == (Free b)   = a == b
