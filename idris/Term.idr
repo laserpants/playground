@@ -44,7 +44,7 @@ name = do
 ||| @t parser to use for the lambda body
 lambda : (t : Parser Term) -> Parser Term
 lambda term = do
-  char '~' <|> char '^' <|> char '&'
+  char '~'
   var <- name
   char '.'
   body <- term
