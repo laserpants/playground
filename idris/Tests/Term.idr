@@ -5,82 +5,82 @@ import Lightyear.Strings
 import Expr
 import Term
 
-bound : Nat -> Expr
-bound n = Bound n ""
+lam : Expr -> Expr
+lam e = ELam e ""
 
 term1_1 : Expr
 term1_1 = 
-  ELam (EApp 
-    (ELam (EApp 
-      (ELam (EApp 
-        (ELam (ELam (ELam (ELam (EApp 
-          (bound 6) 
-          (bound 5)))))) 
-        (ELam (bound 0)))) 
-      (bound 1))) 
-    (ELam (ELam (EApp 
-      (ELam (bound 3)) 
-      (ELam (bound 1)))))) 
+  lam (EApp 
+    (lam (EApp 
+      (lam (EApp 
+        (lam (lam (lam (lam (EApp 
+          (Bound 6) 
+          (Bound 5)))))) 
+        (lam (Bound 0)))) 
+      (Bound 1))) 
+    (lam (lam (EApp 
+      (lam (Bound 3)) 
+      (lam (Bound 1)))))) 
 
 term1_2 : Expr
 term1_2 =
-  ELam (EApp 
-    (ELam (EApp 
-      (ELam (ELam (ELam (ELam (EApp 
-        (bound 5) 
-        (ELam (ELam (EApp 
-          (ELam (bound 8)) 
-          (ELam (bound 1)))))))))) 
-      (ELam (bound 0)))) 
-    (bound 0))
+  lam (EApp 
+    (lam (EApp 
+      (lam (lam (lam (lam (EApp 
+        (Bound 5) 
+        (lam (lam (EApp 
+          (lam (Bound 8)) 
+          (lam (Bound 1)))))))))) 
+      (lam (Bound 0)))) 
+    (Bound 0))
 
 term1_3 : Expr
 term1_3 = 
-  ELam (EApp 
-    (ELam (ELam (ELam (ELam (EApp 
-      (bound 4) 
-      (ELam (ELam (EApp 
-        (ELam (bound 7)) 
-        (ELam (bound 1)))))))))) 
-    (ELam (bound 0)))
+  lam (EApp 
+    (lam (lam (lam (lam (EApp 
+      (Bound 4) 
+      (lam (lam (EApp 
+        (lam (Bound 7)) 
+        (lam (Bound 1)))))))))) 
+    (lam (Bound 0)))
 
 term1_4 : Expr
 term1_4 = 
-  ELam (ELam (ELam (ELam (EApp 
-    (bound 3) 
-    (ELam (ELam (EApp 
-      (ELam (bound 6)) 
-      (ELam (bound 1)))))))))
+  lam (lam (lam (lam (EApp 
+    (Bound 3) 
+    (lam (lam (EApp 
+      (lam (Bound 6)) 
+      (lam (Bound 1)))))))))
 
 term1_5 : Expr
 term1_5 = 
-  ELam (ELam (ELam (ELam (EApp 
-    (bound 3) 
-    (ELam (ELam (bound 5)))))))
+  lam (lam (lam (lam (EApp 
+    (Bound 3) 
+    (lam (lam (Bound 5)))))))
 
 term2_1 : Expr
 term2_1 = 
   EApp 
-    (ELam (ELam (EApp 
-      (bound 1) 
-      (bound 0)))) 
-    (ELam (ELam (EApp 
-      (bound 1) 
-      (bound 0))))
+    (lam (lam (EApp 
+      (Bound 1) 
+      (Bound 0)))) 
+    (lam (lam (EApp 
+      (Bound 1) 
+      (Bound 0))))
 
 term2_2 : Expr
 term2_2 = 
-  ELam (EApp 
-    (ELam (ELam (EApp 
-      (bound 1) 
-      (bound 0)))) 
-    (bound 0))
+  lam (EApp 
+    (lam (lam (EApp 
+      (Bound 1) 
+      (Bound 0)))) 
+    (Bound 0))
 
 term2_3 : Expr
 term2_3 = 
-  ELam (ELam (EApp 
-    (bound 1) 
-    (bound 0)))
+  lam (lam (EApp 
+    (Bound 1) 
+    (Bound 0)))
 
 test1 : IO ()
 test1 = do
