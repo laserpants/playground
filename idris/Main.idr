@@ -20,15 +20,33 @@ import Term.PrettyPrint
 --church_3 : Expr 
 --church_3 = expr_ "~f.~x.f (f (f x))"
 
+--run : Expr -> IO ()
+--run expr = putStrLn (pretty (toTerm r)) where 
+--  r = reduce expr
+
+prettyPrint : Expr -> IO ()
+prettyPrint = putStrLn . pretty . toTerm
+
 run : Expr -> IO ()
-run expr = putStrLn (pretty (toTerm r)) where 
-  r = reduce expr
+run expr = do
+  prettyPrint expr 
+  if isRedex expr 
+     then run (reduct expr) 
+     else pure ()
 
 main : IO ()
-main = do
-  str <- readline "$ "
-  case parseTerm str of
-    Left e => print e
-    Right term => run (fromTerm term)
+main = loop
+  where
+    loop : IO ()
+    loop = do
+      str <- readline "$ "
+      case parseTerm str of
+        Left e => do
+          putStrLn "No parse"
+          loop
+        Right term => do
+          run (fromTerm term)
+          loop
+
   -- run hello
   -- tests
