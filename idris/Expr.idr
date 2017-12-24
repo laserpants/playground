@@ -16,9 +16,9 @@ public export data Expr =
   ||| Lambda abstraction
   ELam Expr String
 
-||| Compare two terms under the notion of alpha equivalence. That is, two terms
-||| are considered equal precisely when one can be converted into the other
-||| purely by renaming bound variables.
+||| Compare two terms under the notion of alpha equivalence. That is, in this
+||| relation, two terms are considered equal precisely when one can be 
+||| converted into the other purely by renaming bound variables.
 export Eq Expr where
   (Bound a)  == (Bound b)  = a == b
   (Free a)   == (Free b)   = a == b
@@ -104,8 +104,14 @@ where
 
 ||| Beta-reduction in /normal order/, defined in terms of 'substitute'.
 ||| @t the term to apply the reduction to
-export total reduce : (t : Expr) -> Expr
-reduce (EApp (ELam t _) s) = substitute 0 t s
-reduce (EApp t u)          = EApp (reduce t) (reduce u)
-reduce (ELam lam v)        = ELam (reduce lam) v
-reduce term                = term
+export total reduct : (t : Expr) -> Expr
+reduct (EApp (ELam t _) s) = substitute 0 t s
+reduct (EApp t u)          = EApp (reduct t) (reduct u)
+reduct (ELam lam v)        = ELam (reduct lam) v
+reduct term                = term
+
+export total isRedex : Expr -> Bool
+isRedex (EApp (ELam _ _) _) = True
+isRedex (EApp e1 e2)        = isRedex e1 || isRedex e2
+isRedex (ELam e1 _)         = isRedex e1
+isRedex _                   = False
