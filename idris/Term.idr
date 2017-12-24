@@ -36,7 +36,7 @@ export Eq Term where
 name : Parser String
 name = do
   head <- letter
-  tail <- many alphaNum
+  tail <- many (alphaNum <|> char '\'')
   let name = head :: tail
   pure (pack name)
 
@@ -44,7 +44,7 @@ name = do
 ||| @t parser to use for the lambda body
 lambda : (t : Parser Term) -> Parser Term
 lambda term = do
-  char '~'
+  char '\\'
   var <- name
   char '.'
   body <- term
@@ -58,7 +58,7 @@ term = do
 where
   expr : Parser Term
   expr = map Var name  -- x
-    <|>| lambda term   -- ~x.M
+    <|>| lambda term   -- \x.M
     <|>| parens term   -- (M)
 
 ||| Parse a lambda term and return either an error string (as `Left`), or the 

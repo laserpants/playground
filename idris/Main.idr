@@ -1,10 +1,12 @@
 module Main
 
+import Effect.StdIO
+import Effects
 import Expr
-import Expr.PrettyPrint
+import Readline
 import Term
-import Term.PrettyPrint
 import Tests.Term
+import Term.PrettyPrint
 
 --church_0 : Expr 
 --church_0 = expr_ "~f.~x.x"
@@ -18,5 +20,15 @@ import Tests.Term
 --church_3 : Expr 
 --church_3 = expr_ "~f.~x.f (f (f x))"
 
+run : Expr -> IO ()
+run expr = putStrLn (pretty (toTerm r)) where 
+  r = reduce expr
+
 main : IO ()
-main = tests
+main = do
+  str <- readline "$ "
+  case parseTerm str of
+    Left e => print e
+    Right term => run (fromTerm term)
+  -- run hello
+  -- tests
