@@ -84,13 +84,13 @@ term2_3 =
 
 test1 : IO ()
 test1 = do
-  printLn (reduce term1_1 == term1_2)
-  printLn (reduce term1_2 == term1_3)
-  printLn (reduce term1_3 == term1_4)
-  printLn (reduce term1_4 == term1_5)
-  printLn (reduce term1_5 == term1_5)
-  printLn (reduce term2_1 == term2_2)
-  printLn (reduce term2_2 == term2_3)
+  printLn (reduct term1_1 == term1_2)
+  printLn (reduct term1_2 == term1_3)
+  printLn (reduct term1_3 == term1_4)
+  printLn (reduct term1_4 == term1_5)
+  printLn (reduct term1_5 == term1_5)
+  printLn (reduct term2_1 == term2_2)
+  printLn (reduct term2_2 == term2_3)
 
 export tests : IO ()
 tests = test1
