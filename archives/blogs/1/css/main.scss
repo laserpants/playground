@@ -1,0 +1,111 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@800&display=swap');
+@import 'breakpoints.scss';
+@import 'typesettings-2.0-min.css';
+
+body {
+  overflow-x: hidden;
+}
+
+:root {
+  --ts-font-family-sans: 'Open Sans', sans-serif;
+}
+
+[data-typesettings] ol, [data-typesettings] ul {
+  margin-left: 2em;
+}
+
+[data-typesettings] pre {
+  white-space: break-spaces;
+}
+
+aside {
+  font-size: 0.9em;
+  font-family: sans-serif;
+  min-width: 40% !important;
+  margin-bottom: 1.4em !important;
+
+  @media (max-width: #{$screen-xl-min}) {
+    min-width: 100% !important;
+  }
+}
+
+footer {
+  text-align: center;
+  font-size: 0.8em;
+  padding: 2em 0;
+}
+
+code {
+  padding: 0 0.5em 0.25em !important;
+  border: none !important;
+  font-size: 0.75em !important;
+}
+
+pre {
+  margin-top: 1em !important;
+}
+
+h1.posts-title {
+  margin-bottom: 1em;
+}
+
+.posts-list h2 {
+  line-height: 1.2 !important;
+}
+
+.posts-list h2 a {
+  border-bottom: none !important;
+}
+
+.posts-list p.timestamp {
+  margin-top: 1.8em;
+}
+
+div.blog-intro {
+  height: 500px; 
+  width: 100vw; 
+  position: absolute; 
+  overflow: hidden;
+
+  @media (max-width: #{$screen-lg-min}) {
+    margin-top: -110px;
+    height: 450px; 
+  }
+}
+
+div.blog-intro .inner {
+  position: absolute; 
+  margin: -300px auto 0; 
+  width: 200vw; 
+  height: 800px; 
+  overflow: hidden; 
+  border-radius: 0 0 220% 0; 
+  background: url(../img/bg.jpg);
+
+  @media (max-width: #{$screen-lg-min}) {
+    margin: -100px auto 0 !important; 
+    height: 500px !important; 
+    background-size: contain;
+    background-position: right center;
+  }
+}
+
+h1.blog-title {
+  position: relative; 
+  font-size: 3.8em; 
+  color: white; 
+  padding-top: 40px;
+
+  @media (max-width: #{$screen-lg-min}) {
+    font-size: 2.8em !important;
+    padding-top: 120px !important;
+  }
+}
+
+main.main {
+  padding-top: 550px;
+
+  @media (max-width: #{$screen-lg-min}) {
+    padding-top: 350px !important;
+  }
+}

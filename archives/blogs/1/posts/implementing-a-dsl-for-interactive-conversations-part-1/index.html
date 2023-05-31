@@ -1,0 +1,571 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+  <meta charset="utf-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1" /> 
+  <title>Eleventy Blog</title> 
+    <!-- KaTeX -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.css" integrity="sha384-AfEj0r4/OFrOo5t7NnNe46zW/tFgW6x/bCJG8FqQCEo3+Aro6EYUG4+cU+KJWu/X" crossorigin="anonymous">
+
+    <!-- The loading of KaTeX is deferred to speed up page rendering -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/katex.min.js" integrity="sha384-g7c+Jr9ZivxKLnZTDUhnkOnsh30B4H0rpLUpJ4jAIKs4fnJI+sEnkvrMWph2EDg4" crossorigin="anonymous"></script>
+
+    <!-- To automatically render math in text elements, include the auto-render extension: -->
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.12.0/dist/contrib/auto-render.min.js" integrity="sha384-mll67QQFJfxn0IYznZYonOWZ644AWYC+Pt2cHqMaRhXVrursRwvLnLaebdGIlYNa" crossorigin="anonymous"
+        onload="renderMathInElement(document.body);"></script>
+
+    <link rel="stylesheet" href="../../css/main.css">
+    <link rel="stylesheet" href="https://unpkg.com/prismjs@1.20.0/themes/prism-tomorrow.css">
+</head> 
+<body> 
+  <div data-typesettings>
+    <header>
+      <div class="blog-intro">
+        <div class="inner"></div>
+        <h1 class="blog-title">
+          Farm Radio International<br>Digital Innovation Blog
+        </h1>
+      </div>
+    </header>
+    <main class="main"> 
+      <article>
+  <a href="/">Home</a>
+  <h1>Implementing a domain-specific language for interactive conversations (Part 1)</h1>
+  <p><em>Author: Heikki Johannes Hildén</em></p>
+<p>In our digital innovation work, we have created interactive listener experiences for a number of years now.
+A common theme in most of these solutions is the ability to engage the audience in conversations over some communication channel.
+With the help of mobile phones and other digital technologies we try to orchestrate 🎻 this in a way so that</p>
+<ol>
+<li>information and knowledge is shared across audiences, and</li>
+<li>insights can be gathered from the resulting data.</li>
+</ol>
+<p>To us, these are the two main reasons for using digital technologies to extend the capabilities of radio.</p>
+<p style="font-size: 1.3em; text-align: center;">
+  📻 + 🤳 = 🙌
+</p>
+<p>Recently, I spent some time thinking about this and ended up exploring a few ideas that may not be immediately useful, but nevertheless interesting.
+It occured to me that this notion of a “conversation” can be modeled as an <em>Embedded Domain Specific Language</em> (EDSL for short) — a <a href="https://en.wikipedia.org/wiki/Domain-specific_language">language specialized to some application domain</a>, and defined in terms of another (general purpose) programming language (usually referred to in the literature as the <em>host</em> language).
+For this purpose I chose <a href="http://haskell.org/">Haskell</a>, since it is particularly well-suited for DSL construction.
+Some familiarity with functional programming concepts and a language like Haskell, OCaml, Scala or Standard ML is therefore useful to be able to follow along.</p>
+<p>Let's start with the following type:</p>
+<pre class="language-haskell"><code class="language-haskell"><span class="token keyword">data</span> <span class="token constant">Action</span><br>  <span class="token operator">=</span> <span class="token constant">Send</span> <span class="token constant">Message</span><br>  <span class="token operator">|</span> <span class="token constant">Receive</span></code></pre>
+<p>This is a coproduct or <a href="https://en.wikipedia.org/wiki/Tagged_union">sum type</a> with two data constructors.
+The values of this type will be our building blocks for creating conversations. To keep it simple, we assume that <code>Message</code> is just an alias for <code>String</code>.
+In a more realistic scenario, we could turn this into a container for content available in a number of different formats.</p>
+<p>With the <code>Action</code> data type at our disposal we can (at least imagine 🦄 that we):</p>
+<ul>
+<li>send a message to the user; or</li>
+<li>listen for, and receive, some input (in a synchronous way).</li>
+</ul>
+<p>At the end of this, we will be able to script out simple conversations using syntax like this:</p>
+<pre class="language-haskell"><code class="language-haskell"><span class="token hvariable">send</span> <span class="token hvariable">intro</span>               <span class="token comment">-- e.g., choose option 1 if you have a question</span><br><span class="token hvariable">input</span> <span class="token operator">&lt;-</span> <span class="token hvariable">receive</span><br><span class="token keyword">if</span> <span class="token punctuation">(</span><span class="token hvariable">input</span> <span class="token operator">==</span> <span class="token number">1</span><span class="token punctuation">)</span><br>  <span class="token keyword">then</span> <span class="token keyword">do</span><br>    <span class="token hvariable">question</span> <span class="token operator">&lt;-</span> <span class="token hvariable">receive</span>  <span class="token comment">-- user provides their question (e.g., as a </span><br>                         <span class="token comment">-- text message or through a voice recording)</span><br>    <span class="token hvariable">send</span> <span class="token hvariable">outro</span>           <span class="token comment">-- thanks for your time</span><br>  <span class="token keyword">else</span><br>    <span class="token comment">-- etc.</span></code></pre>
+<p>The advantage of this approach (as I hope to show here) is that it allows us to use the <code>Action</code> primitive to build conversations in a way that abstracts from what we eventually <em>do</em> with them.
+The code doesn't make any assumptions about how the user will interact with the program when it is executed.
+To actually run the program, we need to provide an <em>interpreter</em>, which implements <code>send</code> and <code>receive</code> against a specific <em>channel</em> and technology platform.
+The behavior of these commands, as experienced by the user, will depend entirely on the choice of this channel.
+We could, for example, use the same program to represent the control-flow aspects of:</p>
+<ul>
+<li>An IVR script (using a third-party API or service like Twilio or Nexmo);</li>
+<li>A messenger application chatbot; or</li>
+<li>A <a href="https://searchnetworking.techtarget.com/definition/USSD">USSD</a> menu.</li>
+</ul>
+<p>In the functional programming community, a popular technique for implementing domain-specific languages revolves around a construct known as the <em>free monad</em> (of a functor).
+A <em>free</em> structure is something that appears in abstract algebra and category theory, but this idea has proven to be useful also as a programming abstraction.
+We will get to what it means for a monad to be &quot;free&quot; in the next post, but let's first look at what it means for a monad to be… 🤔 a monad.</p>
+<h3>Sequencing actions 🧬</h3>
+<p>In code, how do we work with something like the sequence of instructions in the above program?
+As a first attempt, we could try to represent it as a simple list.
+Here is an example using our <code>Action</code> primitive:</p>
+<pre class="language-haskell"><code class="language-haskell"><span class="token punctuation">[</span> <span class="token constant">Send</span> <span class="token string">"Hello and welcome. What is your name?"</span><br><span class="token punctuation">,</span> <span class="token constant">Receive</span><br><span class="token punctuation">,</span> <span class="token constant">Send</span> <span class="token string">"Thanks for chatting!"</span><br><span class="token punctuation">]</span></code></pre>
+<p>This is not a bad idea, but it lacks some expressiveness. As it turns out, <code>Receive</code> is pretty useless since there is no way to extract a return value from what we receive, and thereby allow subsequent commands to operate on input from the user. Here, two observations are in order:</p>
+<p><em>Firstly;</em> since we think of <code>Receive</code> as an <em>effect</em> of some sort — one which will also produce a result — the <code>Action</code> type is insufficient. We need to parameterize <code>Action</code> over the associated return value's type. So, for example, an <code>Action Char</code> is an action that returns a single character.</p>
+<p>Using Haskell's (or rather the GHC compiler's) <a href="https://en.wikibooks.org/wiki/Haskell/GADT">Generalized Algebraic Data Types</a> (GADTs) syntax extension, the two constructors' type signatures can be made explicit in the following way:</p>
+<pre class="language-haskell"><code class="language-haskell"><span class="token keyword">data</span> <span class="token constant">Action</span> <span class="token hvariable">a</span> <span class="token keyword">where</span><br>  <span class="token constant">Send</span>    <span class="token operator">::</span> <span class="token constant">Message</span> <span class="token operator">-></span> <span class="token constant">Action</span> <span class="token punctuation">(</span><span class="token punctuation">)</span><br>  <span class="token constant">Receive</span> <span class="token operator">::</span> <span class="token constant">Action</span> <span class="token constant">Input</span></code></pre>
+<p><em>Secondly;</em> we need some mechanism for <em>binding</em> the result of an action to a name. Building on the previous example, we would then be able to do something like this:</p>
+<pre class="language-haskell"><code class="language-haskell"><span class="token hvariable">send</span> <span class="token string">"Hello and welcome. What is your name?"</span><br><span class="token hvariable">name</span> <span class="token operator">&lt;-</span> <span class="token hvariable">receive</span><br><span class="token hvariable">send</span> <span class="token punctuation">(</span><span class="token string">"Thanks for chatting "</span> <span class="token operator">++</span> <span class="token hvariable">name</span><span class="token punctuation">)</span></code></pre>
+<p>So, instead of a simple list of instructions,</p>
+<pre class="language-haskell"><code class="language-haskell"><span class="token punctuation">[</span> <span class="token hvariable">a</span> <span class="token operator">::</span> <span class="token constant">Action</span><br><span class="token punctuation">,</span> <span class="token hvariable">b</span> <span class="token operator">::</span> <span class="token constant">Action</span><br><span class="token punctuation">,</span> <span class="token hvariable">c</span> <span class="token operator">::</span> <span class="token constant">Action</span><br><span class="token punctuation">,</span> <span class="token operator">...</span> <span class="token punctuation">]</span></code></pre>
+<p>we want something that looks more like…</p>
+<pre class="language-haskell"><code class="language-haskell"><span class="token punctuation">[</span> <span class="token hvariable">f</span> <span class="token operator">::</span> <span class="token punctuation">(</span><span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token constant">Action</span> <span class="token hvariable">b</span><span class="token punctuation">)</span><br><span class="token punctuation">,</span> <span class="token hvariable">g</span> <span class="token operator">::</span> <span class="token punctuation">(</span><span class="token hvariable">b</span> <span class="token operator">-></span> <span class="token constant">Action</span> <span class="token hvariable">c</span><span class="token punctuation">)</span><br><span class="token punctuation">,</span> <span class="token hvariable">h</span> <span class="token operator">::</span> <span class="token punctuation">(</span><span class="token hvariable">c</span> <span class="token operator">-></span> <span class="token constant">Action</span> <span class="token hvariable">d</span><span class="token punctuation">)</span><br><span class="token punctuation">,</span> <span class="token operator">...</span> <span class="token punctuation">]</span></code></pre>
+<p>But a list will not do the trick here — lists are homogeneous containers.
+What we need is some sort of function composition.
+Functions like these that return a value in some context are referred to as <em>monadic</em> functions and,
+as it happens, this is what <a href="https://elvishjerricco.github.io/2016/10/12/kleisli-functors.html">Kleisli composition</a> is all about.</p>
+<div style="text-align: center; padding: 2em 0 1em;">
+<img src="../../img/illstr2.png" style="max-width: 100%;">
+</div>
+<!--
+<div style="text-align: center; padding: 2em 0 1em 0;">
+<img src="../../img/illstr_composition_2.png">
+</div>
+-->
+<p>If we add the ability to take “pure” values and bring them into the context (subject to some laws), then what we have is a monad.</p>
+<h3>From actions to programs</h3>
+<p>But we are getting ahead ourselves.
+There are really two different concerns involved here, namely:</p>
+<ol>
+<li>An expression grammar that captures our notion of a <em>scripted conversation</em> (the <code>Action</code> data type).</li>
+<li>Sequential composition of these expressions into <em>programs</em> in a way that also plays nicely with the type system.</li>
+</ol>
+<p>To avoid proliferation of the <code>Action</code> type —
+the purpose of which is to to describe individual elements (earlier referred to as the “building blocks”) of a conversation
+— let's create a new data type called <code>Program</code>,
+and instead think of <code>Action</code> values as the instructions of these programs.
+To chain programs together we then need a function:</p>
+<pre class="language-haskell"><code class="language-haskell"><span class="token hvariable">compose</span> <span class="token operator">::</span> <span class="token punctuation">(</span><span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token constant">Program</span> <span class="token hvariable">b</span><span class="token punctuation">)</span> <span class="token operator">-></span> <span class="token punctuation">(</span><span class="token hvariable">b</span> <span class="token operator">-></span> <span class="token constant">Program</span> <span class="token hvariable">c</span><span class="token punctuation">)</span> <span class="token operator">-></span> <span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token constant">Program</span> <span class="token hvariable">c</span></code></pre>
+<aside>
+<h2>Monads in category theory</h2>
+<p>Mathematically speaking, a <em>functor</em> maps a category to another category, in a <a href="https://en.wikipedia.org/wiki/Homomorphism">structure-preserving</a> way.</p>
+<!--
+<div style="text-align: center; padding: 2em;">
+<img src="../../img/illstr_functor.png" style="max-width: 100%;">
+</div>
+-->
+<div style="text-align: center; padding: 2em 0 1em;">
+<img src="../../img/illstr3.png" style="max-width: 100%;">
+</div>
+<p>An <em>endofunctor</em> maps a category to itself (the same way that an endofunction is a function <span>\(X \rightarrow X\)</span>).</p>
+<div style="text-align: center; padding: 2em 0 1em;">
+<img src="../../img/illstr4.png" style="max-width: 100%;">
+</div>
+<p>For concreteness, we can take the object <span>\(A\)</span> here to be any type in Haskell, like <code>Int</code> or <code>Bool</code>.
+<span>\(F\)</span> would then correspond to a type constructor, e.g., <code>Maybe</code> or <code>List</code>.</p>
+<p>Climbing up a rung on the ladder of abstraction; <em>natural transformations</em> are mappings between functors (morphisms in a <a href="https://en.wikipedia.org/wiki/Functor_category">functor category</a>).
+For this to work, these two functors must have the same domain and codomain.</p>
+<div style="text-align: center; padding: 2em 0 1em;">
+<img src="../../img/illstr5.png" style="max-width: 100%;">
+</div>
+<p>Let <span>\(\nu\)</span> be a natural transformation between two functors <span>\(F\)</span> and <span>\(G\)</span>, both <span>\(\mathcal{C} \rightarrow \mathcal{D}\)</span>.</p>
+<div style="text-align: center; padding: 2em 0 1em;">
+<!--
+<img src="../../img/illstr_naturaltransf_2.png" style="max-width: 100%;">
+-->
+<img src="../../img/illstr1.png" style="max-width: 100%;">
+</div>
+<p>Then for every object <span>\(A\)</span> in <span>\(\mathcal{C}\)</span>,
+there is a morphism <span>\(\nu_A : F(A) \rightarrow G(A)\)</span> in <span>\(\mathcal{D}\)</span>,
+such that given any morphism <span>\(f : A \rightarrow B\)</span> in <span>\(\mathcal{C}\)</span>, the following identity holds:</p>
+<p>$$\nu_B \circ F(f) = G(f) \circ \nu_A.$$</p>
+<p>This is usually stated in the form of a <a href="https://en.wikipedia.org/wiki/Commutative_diagram">commutative diagram</a>:</p>
+<div style="text-align: center; padding: 2em 0 1em;">
+<img src="../../img/illstr6.png" style="max-width: 100%;">
+</div>
+<p>To say that a diagram <em>commutes</em> means that any two paths with the same start and endpoints are equivalent.
+Not every diagram is a commutative diagram. Just to make this clear, consider the following counterexample
+— a diagram of the Haskell functions <code>id</code>, and <code>const 1</code> (<code>const</code> partially applied to <code>1</code>):</p>
+<div style="text-align: center; padding: 2em 0 1em;">
+<img src="../../img/illstr7.png" style="max-width: 100%;">
+</div>
+<p>This diagram does <em>not</em> commute, since, for example, <code>(id . id) 5 == 5</code> which is not equal to <code>(const 1) 5</code>.</p>
+<!--
+Components must be such that for every morphism f : X → Y in C we have:
+{\displaystyle \eta _{Y}\circ F(f)=G(f)\circ \eta _{X}} \eta_Y \circ F(f) = G(f) \circ \eta_X
+-->
+<p>A <em>monad</em> is an endofunctor <span>\(M\)</span> together with two natural transformations;</p>
+<div>
+$$
+  \begin{array}{l l}
+    \begin{array}{r c l}
+      \mu  &: &M \times M \rightarrow M \\ 
+      \eta &: &\texttt{id} \rightarrow M
+    \end{array}
+    & \quad \quad \quad (*)
+  \end{array}
+$$ 
+</div>
+<p>where <span>\(\texttt{id}\)</span> means the identity functor.</p>
+<div style="text-align: center; padding: 2em 0 1em;">
+<img src="../../img/illstr8.png" style="max-width: 100%;">
+</div>
+<p>As usual there are some laws.
+If <span>\(M\)</span> is a functor <span>\(\mathcal{C} \rightarrow \mathcal{C}\)</span>, then we need so that for every object <span>\(X\)</span> in <span>\(\mathcal{C}\)</span>;</p>
+<div>
+$$
+  \begin{array}{r c l}
+    \mu_X \circ M(\mu_X) &= &\mu_X \circ \mu_{M(X)} \quad \text{and} \\
+    \mu_X \circ \eta_{M(X)} &= &\mu_X \circ M(\eta_X).
+  \end{array}
+$$
+</div>
+<p>Another way to phrase this is to say that a monad forms a <a href="https://stackoverflow.com/questions/3870088/a-monad-is-just-a-monoid-in-the-category-of-endofunctors-whats-the-problem">monoid object in an endofunctor category</a>.
+The monoidal structure becomes more apparent by rephrasing the above laws in terms of Kleisli composition, using Haskell's &quot;fish&quot; operator (<code>&gt;=&gt;</code>):</p>
+<div style="margin: 1em 0;">
+<table style="font-size: 0.85em;">
+<thead>
+</thead>
+<tbody>
+  <tr>
+    <td>
+    </td>
+    <td>
+      <b>Left and right identity</b>
+    </td>
+    <td>
+      <b>Associativity</b>
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <b>Monoid</b>
+    </td>
+    <td>
+      \(
+        \exists e \in M \text{ s.t. } \forall x \in M: \\
+        \quad e \odot x = x \\
+        \quad x \odot e = x
+      \)
+    </td>
+    <td>
+      \(
+        \forall x,y,z \in M: \\
+        (x \odot y) \odot z = x \odot (y \odot z)
+      \)
+    </td>
+  </tr>
+  <tr>
+    <td>
+      <b>Monad</b>
+    </td>
+    <td>
+      <code>return >=> g ≡ g</code><br />
+      <code>f >=> return ≡ f</code>
+    </td>
+    <td>
+      <code>(f >=> g) >=> h ≡ f >=> (g >=> h)</code>
+    </td>
+  </tr>
+</tbody>
+</table>
+</div>
+<!--
+<table style="font-size: 0.7em;">
+<thead>
+  <tr>
+    <th>
+      Law
+    </th>
+    <th>
+      Monoid
+    </th>
+    <th>
+      Monad
+    </th>
+  </tr>
+</thead>
+<tbody>
+  <tr>
+    <td rowspan="2">
+      Left and right identity
+    </td>
+    <td rowspan="2">
+      \(\exists e \in M \text{ s.t. } \forall x \in M\)
+    </td>
+    <td>\(e \odot x = x\)</td>
+    <td><code>return >=> g ≡ g</code></td>
+  </tr>
+  <tr>
+    <td>\(x \odot e = x\)</td>
+    <td><code>f >=> return ≡ f</code></td>
+  </tr>
+  <tr>
+    <td>
+      Associativity
+    </td>
+    <td>
+      \(\forall x,y,z \in M\)
+    </td>
+    <td>\((x \odot y) \odot z = x \odot (y \odot z)\)</td>
+    <td><code>(f >=> g) >=> h ≡ f >=> (g >=> h)</code></td>
+  </tr>
+</tbody>
+</table>
+-->
+<!--
+$$
+\begin{array}{r l}
+  \exists e \in M \text{ s.t. } \forall x \in M : & e \odot x = x \\
+                                                  & x \odot e = x \\
+  \forall x, y, z \in M :                         & (x \odot y) \odot z = x \odot (y \odot z)
+\end{array}
+d$$
+-->
+<p>In Haskell, all functors are endofunctors and objects are types (living in the <em>idealized</em> category <strong>Hask</strong>). If <code>Program</code> is a functor, then <code>fmap</code> will “lift” any function <code>a -&gt; b</code> into a corresponding function <code>Program a -&gt; Program b</code>.
+This means that if we have two functions <code>f :: a -&gt; Program b</code> and <code>g :: b -&gt; Program c</code>, then we can create a function <code>h :: a -&gt; Program (Program c)</code> by letting <code>h = fmap g . f</code>.</p>
+<div style="text-align: center; padding: 2em 0 1em;">
+<img src="../../img/illstr9.png" style="max-width: 100%;">
+</div>
+<p>All we need now is a way to go from <code>Program (Program c)</code> to <code>Program c</code>.</p>
+<p>To reiterate, a natural transformation between functors <span>\(F\)</span> and <span>\(G\)</span> associates every object <span>\(A\)</span> in a category with an arrow <span>\(F(A) \rightarrow G(A)\)</span>.
+In other words, a natural transformation is a <em>family of morphisms</em>.
+This corresponds to a polymorphic function in Haskell:</p>
+<pre><code>forall a. f a -&gt; g a
+</code></pre>
+<p>if we set <span>\(M = \texttt{Program}\)</span>, then the natural transformation <span>\(\mu\)</span> from the above definition <span>(\(*\))</span> turns out to be exactly what we need:</p>
+<pre><code>forall a. Program (Program a) -&gt; Program a
+</code></pre>
+<p>In Haskell, this function is known as <code>join</code>:</p>
+<pre><code>join :: Monad m =&gt; m (m a) -&gt; m a 
+</code></pre>
+<p>and this is all we need to define Kleisli composition and the bind operator. Here is <code>&gt;&gt;=</code> defined in terms of <code>join</code>:</p>
+<pre><code>(&gt;&gt;=) :: (Monad m) =&gt; m a -&gt; (a -&gt; m b) -&gt; m b
+m &gt;&gt;= f = join (fmap f m)
+</code></pre>
+<p>In the main text I discuss the role of <code>&gt;&gt;=</code> and why it is preferred over Kleisli composition in most code.</p>
+<!--
+We are really looking at two different tasks here, namely to:
+
+1. Implement an expression grammar that captures our notion of a *scripted conversation* (the `Action` data type).
+2. Provide a mechanism for building *programs* from these expressions in a way that plays nicely with the type system.
+
+To keep these problem domains
+
+```
+a  ========>  m b
+           |
+    _______|
+   |
+   v
+b  ========>  m c
+           |
+    _______|
+   |
+   v
+c  ========>  m d
+```
+
+Unfortunately, this doesn't even type check. (Lists are homogeneous containers.)
+-->
+<p><em>Aside</em>:
+One of the things that make functional programming great, in my opinion, is that we can reason about program construction in this way, using very precise mathematical language and concepts.</p>
+</aside>
+<!--
+So, in a nutshell 🌰 we have a bunch of functions `x -> Action y` that need to be glued together. 
+-->
+<p>But what should the <code>Program</code> constructor look like here?
+Let's imagine for a moment that these were ordinary functions <code>a -&gt; b</code>, instead of <code>a -&gt; Program b</code>.
+Given functions <code>f, g</code> and <code>h</code>, we could then write</p>
+<pre class="language-haskell"><code class="language-haskell"><span class="token import-statement"><span class="token keyword">import</span> Control.Arrow</span><br><br><span class="token hvariable">prog</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">x</span> <span class="token operator">-></span> <span class="token hvariable">f</span> <span class="token hvariable">x</span><span class="token punctuation">)</span><br>   <span class="token operator">>>></span> <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">y</span> <span class="token operator">-></span> <span class="token hvariable">g</span> <span class="token hvariable">y</span><span class="token punctuation">)</span><br>   <span class="token operator">>>></span> <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">z</span> <span class="token operator">-></span> <span class="token hvariable">h</span> <span class="token hvariable">z</span><span class="token punctuation">)</span></code></pre>
+<p>… where it is easiest to think of <code>&gt;&gt;&gt;</code> as specialized to mean function composition in the opposite direction (i.e., <code>flip (.)</code>). So we could read this program as: <code>f</code> then <code>g</code> then <code>h</code>. The “snag” is that, since these lambdas do not share scope with the expressions earlier in the chain, if we'd want to access any of the intermediate results — consider for instance</p>
+<pre class="language-haskell"><code class="language-haskell"><span class="token hvariable">frog</span> <span class="token operator">=</span> <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">x</span> <span class="token operator">-></span> <span class="token hvariable">f</span> <span class="token hvariable">x</span><span class="token punctuation">)</span><br>   <span class="token operator">>>></span> <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">y</span> <span class="token operator">-></span> <span class="token hvariable">g</span> <span class="token hvariable">y</span><span class="token punctuation">)</span><br>   <span class="token operator">>>></span> <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">z</span> <span class="token operator">-></span> <span class="token hvariable">h</span> <span class="token hvariable">z</span><span class="token punctuation">)</span><br>   <span class="token operator">>>></span> <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token punctuation">(</span><span class="token hvariable">x</span><span class="token punctuation">,</span> <span class="token hvariable">y</span><span class="token punctuation">,</span> <span class="token hvariable">z</span><span class="token punctuation">,</span> <span class="token hvariable">a</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+<p>— then we're stuck with an <code>error: Variable not in scope: x</code>. This is similar to a problem that pops up in <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise/then#Chaining">Promise chaining</a> in JavaScript code:</p>
+<pre class="language-js"><code class="language-js"><span class="token function">doStuff</span><span class="token punctuation">(</span><span class="token punctuation">)</span><br>  <span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span><span class="token parameter">x</span> <span class="token operator">=></span> <span class="token function">doMoreStuffWith</span><span class="token punctuation">(</span>x<span class="token punctuation">)</span><span class="token punctuation">)</span><br>  <span class="token punctuation">.</span><span class="token function">then</span><span class="token punctuation">(</span><span class="token parameter">y</span> <span class="token operator">=></span> <span class="token punctuation">{</span><br>    <span class="token comment">// where is my x?</span><br>  <span class="token punctuation">}</span><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+<p>Our friend🦸here is the “reverse function application” operator, known as <code>|&gt;</code> in OCaml and F#. This operator is available from <code>Data.Function</code> in Haskell, as <code>(&amp;)</code>, and succinctly defined as</p>
+<pre class="language-haskell"><code class="language-haskell"><span class="token hvariable">x</span> <span class="token operator">&amp;</span> <span class="token hvariable">f</span> <span class="token operator">=</span> <span class="token hvariable">f</span> <span class="token hvariable">x</span></code></pre>
+<p>Using <code>(&amp;)</code>, we can rewrite our program as:</p>
+<pre class="language-haskell"><code class="language-haskell"><span class="token import-statement"><span class="token keyword">import</span> Data.Function</span> <span class="token punctuation">(</span><span class="token punctuation">(</span><span class="token operator">&amp;</span><span class="token punctuation">)</span><span class="token punctuation">)</span><br><br><span class="token hvariable">grog</span> <span class="token operator">=</span> <span class="token operator">\</span><span class="token hvariable">x</span> <span class="token operator">-></span> <span class="token punctuation">(</span><span class="token hvariable">f</span> <span class="token hvariable">x</span>                <span class="token comment">-- parentheses added for emphasis</span><br>     <span class="token operator">&amp;</span> <span class="token operator">\</span><span class="token hvariable">y</span> <span class="token operator">-></span> <span class="token punctuation">(</span><span class="token hvariable">g</span> <span class="token hvariable">y</span><br>     <span class="token operator">&amp;</span> <span class="token operator">\</span><span class="token hvariable">z</span> <span class="token operator">-></span> <span class="token punctuation">(</span><span class="token hvariable">h</span> <span class="token hvariable">z</span><br>     <span class="token operator">&amp;</span> <span class="token operator">\</span><span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token punctuation">(</span><span class="token hvariable">x</span><span class="token punctuation">,</span> <span class="token hvariable">y</span><span class="token punctuation">,</span> <span class="token hvariable">z</span><span class="token punctuation">,</span> <span class="token hvariable">a</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+<p>The idea is that we arrive at the same (<a href="https://en.wikipedia.org/wiki/Extensionality#In_mathematics">extensionally</a> speaking, at least) function from <code>\x -&gt; (f x &amp; \y -&gt; g y)</code> as we get from <code>(\x -&gt; f x) &gt;&gt;&gt; (\y -&gt; g y)</code>. As an example, here is how evaluation of <code>5 &amp; (\x -&gt; f x &amp; (\y -&gt; g y &amp; (\z -&gt; h z)))</code> proceeds:</p>
+<pre class="language-haskell"><code class="language-haskell"><span class="token number">5</span> <span class="token operator">&amp;</span> <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">x</span> <span class="token operator">-></span> <span class="token hvariable">f</span> <span class="token hvariable">x</span> <span class="token operator">&amp;</span> <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">y</span> <span class="token operator">-></span> <span class="token hvariable">g</span> <span class="token hvariable">y</span> <span class="token operator">&amp;</span> <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">z</span> <span class="token operator">-></span> <span class="token hvariable">h</span> <span class="token hvariable">z</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><br><span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">x</span> <span class="token operator">-></span> <span class="token hvariable">f</span> <span class="token hvariable">x</span> <span class="token operator">&amp;</span> <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">y</span> <span class="token operator">-></span> <span class="token hvariable">g</span> <span class="token hvariable">y</span> <span class="token operator">&amp;</span> <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">z</span> <span class="token operator">-></span> <span class="token hvariable">h</span> <span class="token hvariable">z</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token number">5</span>    <span class="token comment">-- x &amp; f == f x</span><br><span class="token punctuation">(</span><span class="token hvariable">f</span> <span class="token number">5</span> <span class="token operator">&amp;</span> <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">y</span> <span class="token operator">-></span> <span class="token hvariable">g</span> <span class="token hvariable">y</span> <span class="token operator">&amp;</span> <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">z</span> <span class="token operator">-></span> <span class="token hvariable">h</span> <span class="token hvariable">z</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span>            <span class="token comment">-- normal order evaluation</span><br><span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">y</span> <span class="token operator">-></span> <span class="token hvariable">g</span> <span class="token hvariable">y</span> <span class="token operator">&amp;</span> <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">z</span> <span class="token operator">-></span> <span class="token hvariable">h</span> <span class="token hvariable">z</span><span class="token punctuation">)</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token hvariable">f</span> <span class="token number">5</span><span class="token punctuation">)</span>              <span class="token comment">-- same steps over again</span><br><span class="token punctuation">(</span><span class="token hvariable">g</span> <span class="token punctuation">(</span><span class="token hvariable">f</span> <span class="token number">5</span><span class="token punctuation">)</span> <span class="token operator">&amp;</span> <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">z</span> <span class="token operator">-></span> <span class="token hvariable">h</span> <span class="token hvariable">z</span><span class="token punctuation">)</span><span class="token punctuation">)</span><br><span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">z</span> <span class="token operator">-></span> <span class="token hvariable">h</span> <span class="token hvariable">z</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token hvariable">g</span> <span class="token punctuation">(</span><span class="token hvariable">f</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">)</span><br><span class="token hvariable">h</span> <span class="token punctuation">(</span><span class="token hvariable">g</span> <span class="token punctuation">(</span><span class="token hvariable">f</span> <span class="token number">5</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+<!--
+Ordinary function composition is (f o g) x = f (g x)
+
+```haskell
+(.) :: (b -> c) -> (a -> b) -> a -> c
+```
+
+The direct equivalent of this type of composition is known as [Kleisli composition](https://www.slideshare.net/pjschwarz/kleisli-composition) and in Haskell it is denoted by an operator that looks like a fish.
+
+```haskell
+(<=<) :: (b -> m c) -> (a -> m b) -> a -> m c
+```
+
+Since programs are typically written `a; b; c ...` and not `... c after b after a`, we usually want this fish to swim in the opposite direction:
+
+```haskell
+(>=>) :: (a -> m b) -> (b -> m c) -> a -> m c
+```
+
+```haskell
+return >=> g ≡ g
+```
+
+```haskell
+f >=> return ≡ f
+```
+
+```haskell
+(f >=> g) >=> h ≡ f >=> (g >=> h)
+```
+
+```haskell
+f >=> g = \x -> f x >>= g
+```
+-->
+<p>That's great, but we are <em>not</em> composing ordinary functions.
+Instead of <code>a -&gt; (a -&gt; b) -&gt; b</code>, we are now looking for something like <code>Program a -&gt; (a -&gt; Program b) -&gt; Program b</code>.
+Let's try to wrap this in a constructor.</p>
+<pre class="language-haskell"><code class="language-haskell"><span class="token keyword">data</span> <span class="token constant">Program</span> <span class="token hvariable">a</span> <span class="token keyword">where</span><br>  <span class="token constant">Combine</span> <span class="token operator">::</span> <span class="token constant">Program</span> <span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token punctuation">(</span><span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token constant">Program</span> <span class="token hvariable">b</span><span class="token punctuation">)</span> <span class="token operator">-></span> <span class="token constant">Program</span> <span class="token hvariable">b</span></code></pre>
+<p>Hmm… 🤔
+To create a <code>Program</code> you first need a <code>Program</code>!</p>
+<div style="text-align: center; padding: 1.4em 0 0;">
+<img src="../../img/tic-tac-toe.png" style="width: 450px;">
+</div>
+<p>We'd better start with something else.
+Programs should be built from instructions, i.e., <code>Action</code> values,
+so I'll change the type of the first parameter to an <code>Action a</code>, and and arrive at this neat definition:</p>
+<pre class="language-haskell"><code class="language-haskell"><span class="token keyword">data</span> <span class="token constant">Program</span> <span class="token hvariable">a</span> <span class="token keyword">where</span><br>  <span class="token constant">Combine</span> <span class="token operator">::</span> <span class="token constant">Action</span> <span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token punctuation">(</span><span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token constant">Program</span> <span class="token hvariable">b</span><span class="token punctuation">)</span> <span class="token operator">-></span> <span class="token constant">Program</span> <span class="token hvariable">b</span></code></pre>
+<p>To create a <code>Program</code> we take an <code>Action</code> that produces a value of type <code>a</code>
+and then <code>Combine</code> this with a <em>continuation</em> — a function that
+takes the very same <code>a</code> value as input and returns another <code>Program</code>.
+Note that we could just as well have defined <code>Combine</code> as <code>t a -&gt; (a -&gt; Program t b) -&gt; Program t b</code>, where <code>t</code> is any type constructor <code>* -&gt; *</code>.</p>
+<p>We can now (almost) write our program as</p>
+<pre class="language-haskell"><code class="language-haskell"><span class="token hvariable">program</span> <span class="token operator">=</span><br>    <span class="token constant">Send</span> <span class="token string">"Hello and welcome. What is your name?"</span><br>  `<span class="token constant">Combine</span>`<br>    <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">_</span> <span class="token operator">-></span> <span class="token constant">Receive</span><br>  `<span class="token constant">Combine</span>` <span class="token punctuation">(</span><br>    <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">name</span> <span class="token operator">-></span> <span class="token constant">Send</span> <span class="token punctuation">(</span><span class="token string">"Thanks for chatting "</span> <span class="token operator">++</span> <span class="token hvariable">name</span><span class="token punctuation">)</span><br>  `<span class="token constant">Combine</span>`<br>    <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">_</span> <span class="token operator">-></span> <span class="token operator">...</span> <span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+<p>which also resonates with the lexical scoping rules of most procedural programming languages.</p>
+<p>I wrote “…” in the last line because, at this point, there seems to be no way to terminate the program.
+That is, in each step we are forced to provide yet <em>another</em> <code>Program</code>.
+To get around this, we need to be able to create a “trivial program” that can serve as the base case. Adding a second constructor to <code>Program</code> solves this problem, and we can pretend that it's C and <code>Exit</code> the program with a return code 0:</p>
+<pre class="language-haskell"><code class="language-haskell"><span class="token keyword">data</span> <span class="token constant">Program</span> <span class="token hvariable">a</span> <span class="token keyword">where</span><br>  <span class="token constant">Combine</span> <span class="token operator">::</span> <span class="token constant">Action</span> <span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token punctuation">(</span><span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token constant">Program</span> <span class="token hvariable">b</span><span class="token punctuation">)</span> <span class="token operator">-></span> <span class="token constant">Program</span> <span class="token hvariable">b</span><br>  <span class="token constant">Exit</span>    <span class="token operator">::</span> <span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token constant">Program</span> <span class="token hvariable">a</span><br><br><span class="token hvariable">program</span> <span class="token operator">=</span><br>    <span class="token constant">Send</span> <span class="token string">"Hello and welcome. What is your name?"</span><br>  `<span class="token constant">Combine</span>`<br>    <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">_</span> <span class="token operator">-></span> <span class="token constant">Receive</span><br>  `<span class="token constant">Combine</span>` <span class="token punctuation">(</span><br>    <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">name</span> <span class="token operator">-></span> <span class="token constant">Send</span> <span class="token punctuation">(</span><span class="token string">"Thanks for chatting "</span> <span class="token operator">++</span> <span class="token hvariable">name</span><span class="token punctuation">)</span><br>  `<span class="token constant">Combine</span>`<br>    <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">_</span> <span class="token operator">-></span> <span class="token constant">Exit</span> <span class="token number">0</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">)</span></code></pre>
+<p>This is what I was referring earlier as injecting a pure value into the monad.
+Next, let's create some recipes 🪄 for turning <code>Action</code>s into <code>Program</code>s:</p>
+<pre class="language-haskell"><code class="language-haskell"><span class="token hvariable">send</span> <span class="token operator">::</span> <span class="token constant">Message</span> <span class="token operator">-></span> <span class="token constant">Program</span> <span class="token punctuation">(</span><span class="token punctuation">)</span><br><span class="token hvariable">send</span> <span class="token hvariable">msg</span> <span class="token operator">=</span> <span class="token constant">Combine</span> <span class="token punctuation">(</span><span class="token constant">Send</span> <span class="token hvariable">msg</span><span class="token punctuation">)</span> <span class="token constant">Exit</span><br><br><span class="token hvariable">receive</span> <span class="token operator">::</span> <span class="token constant">Program</span> <span class="token constant">Input</span><br><span class="token hvariable">receive</span> <span class="token operator">=</span> <span class="token constant">Combine</span> <span class="token constant">Receive</span> <span class="token constant">Exit</span></code></pre>
+<h3>Wrapping up</h3>
+<p>We are now ready to revisit the function signature <code>Program a -&gt; (a -&gt; Program b) -&gt; Program b</code> which is what we were initially looking for. Let's define this function as:</p>
+<pre class="language-haskell"><code class="language-haskell"><span class="token hvariable">glue</span> <span class="token operator">::</span> <span class="token constant">Program</span> <span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token punctuation">(</span><span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token constant">Program</span> <span class="token hvariable">b</span><span class="token punctuation">)</span> <span class="token operator">-></span> <span class="token constant">Program</span> <span class="token hvariable">b</span><br><span class="token hvariable">glue</span> <span class="token punctuation">(</span><span class="token constant">Combine</span> <span class="token hvariable">action</span> <span class="token hvariable">f</span><span class="token punctuation">)</span> <span class="token hvariable">next</span> <span class="token operator">=</span> <span class="token constant">Combine</span> <span class="token hvariable">action</span> <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">x</span> <span class="token operator">-></span> <span class="token hvariable">glue</span> <span class="token punctuation">(</span><span class="token hvariable">f</span> <span class="token hvariable">x</span><span class="token punctuation">)</span> <span class="token hvariable">next</span><span class="token punctuation">)</span><br><span class="token hvariable">glue</span> <span class="token punctuation">(</span><span class="token constant">Exit</span> <span class="token hvariable">a</span><span class="token punctuation">)</span> <span class="token hvariable">next</span> <span class="token operator">=</span> <span class="token hvariable">next</span> <span class="token hvariable">a</span></code></pre>
+<p>This is just the <code>&gt;&gt;=</code> operator specialized to the <code>Program</code> type.
+I can now go ahead and define Kleisli composition of <code>Program</code>s, in terms of this function.</p>
+<pre class="language-haskell"><code class="language-haskell"><span class="token hvariable">compose</span> <span class="token operator">::</span> <span class="token punctuation">(</span><span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token constant">Program</span> <span class="token hvariable">b</span><span class="token punctuation">)</span> <span class="token operator">-></span> <span class="token punctuation">(</span><span class="token hvariable">b</span> <span class="token operator">-></span> <span class="token constant">Program</span> <span class="token hvariable">c</span><span class="token punctuation">)</span> <span class="token operator">-></span> <span class="token punctuation">(</span><span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token constant">Program</span> <span class="token hvariable">c</span><span class="token punctuation">)</span><br><span class="token hvariable">compose</span> <span class="token hvariable">f</span> <span class="token hvariable">g</span> <span class="token operator">=</span> <span class="token operator">\</span><span class="token hvariable">x</span> <span class="token operator">-></span> <span class="token hvariable">glue</span> <span class="token punctuation">(</span><span class="token hvariable">f</span> <span class="token hvariable">x</span><span class="token punctuation">)</span> <span class="token hvariable">g</span></code></pre>
+<p>All we need at this point to be able to use Haskell's <code>do</code>-syntax in the convenient imperative style
+is to make <code>Program</code> an instance of the <code>Monad</code> typeclass.</p>
+<pre class="language-haskell"><code class="language-haskell"><span class="token constant">Combine</span> <span class="token hvariable">action</span> <span class="token hvariable">prog</span> <span class="token operator">>>=</span> <span class="token hvariable">next</span> <span class="token operator">=</span> <span class="token constant">Combine</span> <span class="token hvariable">action</span> <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token hvariable">prog</span> <span class="token hvariable">a</span> <span class="token operator">>>=</span> <span class="token hvariable">next</span><span class="token punctuation">)</span><br><span class="token constant">Exit</span> <span class="token hvariable">a</span>              <span class="token operator">>>=</span> <span class="token hvariable">next</span> <span class="token operator">=</span> <span class="token hvariable">next</span> <span class="token hvariable">a</span><br><span class="token builtin">return</span>                       <span class="token operator">=</span> <span class="token constant">Exit</span></code></pre>
+<p>In the final program, I have also provided instances of <code>Functor</code>, and <code>Applicative</code>. These are requried since <code>Monad</code> is a subclass of <code>Applicative</code> which, in turn, is a subclass of <code>Functor</code>.
+With recent versions of <code>ghc</code>, the <code>Functor</code> typeclass instance can be derived automatically by the compiler.</p>
+<h3>A command-line interpreter</h3>
+<p>To make it possible to run this program, I am going to create a simple <code>IO</code> interpreter which uses <code>putStrLn</code> and <code>getLine</code> to interact with the user.
+Not too exciting, but bear 🐻 with me.</p>
+<!--
+```
+f >=> g = \x -> f x >>= g
+```
+-->
+<!--
+$$
+m >>= (\lambda x \rightarrow f\ x >>= g)
+$$
+
+$$
+\text{Combine}\ a\ b >>= (\lambda x \rightarrow f\ x >>= g)
+$$
+
+$$
+\text{Combine}\ a\ (\lambda x \rightarrow b\ x >>= (\lambda x' \rightarrow f\ x' >>= g))
+$$
+
+$$
+\text{Combine}\ a\ (\lambda x \rightarrow (\lambda x' \rightarrow \text{Combine}\ a'\ (\lambda x'' \rightarrow \text{Combine}\ a''\ (\lambda x''' \rightarrow \text{Exit}\ r)))\ x >>= (\lambda x'''' \rightarrow f\ x'''' >>= g))
+$$
+
+$$
+\text{Combine}\ a\ (\lambda x \rightarrow \text{Combine}\ a'\ (\lambda x' \rightarrow \text{Combine}\ a''\ (\lambda x'' \rightarrow \text{Exit}\ r)) >>= (\lambda x''' \rightarrow f\ x''' >>= g))
+$$
+
+$$
+\text{Combine}\ a\ (\lambda x \rightarrow \text{Combine}\ a'\ (\lambda x' \rightarrow (\lambda x'' \rightarrow \text{Combine}\ a''\ (\lambda x''' \rightarrow \text{Exit}\ r))\ x' >>= (\lambda x'''' \rightarrow f\ x'''' >>= g)))
+$$
+
+$$
+\text{Combine}\ a\ (\lambda x \rightarrow \text{Combine}\ a'\ (\lambda x' \rightarrow \text{Combine}\ a''\ (\lambda x'' \rightarrow \text{Exit}\ r) >>= (\lambda x''' \rightarrow f\ x''' >>= g)))
+$$
+
+$$
+\text{Combine}\ a\ (\lambda x \rightarrow \text{Combine}\ a'\ (\lambda x' \rightarrow \text{Combine}\ a''\ (\lambda x'' \rightarrow (\lambda x''' \rightarrow \text{Exit}\ r)\ x'' >>= (\lambda x'''' \rightarrow f\ x'''' >>= g))))
+$$
+
+$$
+\text{Combine}\ a\ (\lambda x \rightarrow \text{Combine}\ a'\ (\lambda x' \rightarrow \text{Combine}\ a''\ (\lambda x'' \rightarrow \text{Exit}\ r >>= (\lambda x''' \rightarrow f\ x''' >>= g))))
+$$
+
+$$
+\text{Combine}\ a\ (\lambda x \rightarrow \text{Combine}\ a'\ (\lambda x' \rightarrow \text{Combine}\ a''\ (\lambda x'' \rightarrow (\lambda x''' \rightarrow f\ x''' >>= g)\ r)))
+$$
+
+xxx
+
+$$
+\text{Combine}\ a\ (\lambda x \rightarrow \text{Combine}\ a'\ (\lambda x' \rightarrow \text{Combine}\ a''\ (\lambda x'' \rightarrow f\ r >>= g)))
+$$
+
+$$
+\text{Combine}\ a\ (\lambda x \rightarrow \text{Combine}\ a'\ (\lambda x' \rightarrow \text{Combine}\ a''\ (\lambda x'' \rightarrow (\text{Exit}\ r >>= f) >>= g)))
+$$
+
+$$
+\text{Combine}\ a\ (\lambda x \rightarrow \text{Combine}\ a'\ (\lambda x' \rightarrow \text{Combine}\ a''\ (\lambda x'' \rightarrow (\lambda x''' \rightarrow \text{Exit}\ r >>= f)\ x'' >>= g)))
+$$
+
+$$
+\text{Combine}\ a\ (\lambda x \rightarrow \text{Combine}\ a'\ (\lambda x' \rightarrow \text{Combine}\ a''\ (\lambda x'' \rightarrow \text{Exit}\ r >>= f) >>= g))
+$$
+
+$$
+\text{Combine}\ a\ (\lambda x \rightarrow \text{Combine}\ a'\ (\lambda x' \rightarrow (\text{Combine}\ a''\ (\lambda x'' \rightarrow (\lambda x''' \rightarrow \text{Exit}\ r)\ x'' >>= f)) >>= g))
+$$
+
+$$
+\text{Combine}\ a\ (\lambda x \rightarrow \text{Combine}\ a'\ (\lambda x' \rightarrow (\text{Combine}\ a''\ (\lambda x'' \rightarrow \text{Exit}\ r) >>= f) >>= g))
+$$
+
+$$
+* \text{Combine}\ a\ (\lambda x \rightarrow \text{Combine}\ a'\ (\lambda x' \rightarrow (\text{Combine}\ a''\ (\cdots (\lambda x^{(n)} \rightarrow \text{Exit}\ r) >>= f) >>= g) \cdots))
+$$
+
+$$
+\text{Combine}\ a\ (\lambda x \rightarrow (\text{Combine}\ a'\ b' >>= f) >>= g)
+$$
+
+$$
+\text{Combine}\ a\ (\lambda x \rightarrow ((\lambda x' \rightarrow m')\ x >>= f) >>= g)
+$$
+
+$$
+\text{Combine}\ a\ (\lambda x \rightarrow (b\ x >>= f) >>= g)
+$$
+
+$$
+\text{Combine}\ a\ (\lambda x' \rightarrow (\lambda x \rightarrow b\ x >>= f)\ x' >>= g)
+$$
+
+$$
+\text{Combine}\ a\ (\lambda x \rightarrow b\ x >>= f) >>= g
+$$
+
+$$
+(\text{Combine}\ a\ b >>= f) >>= g
+$$
+
+$$
+(m >>= f) >>= g
+$$
+-->
+<pre class="language-haskell"><code class="language-haskell"><span class="token comment">{-# LANGUAGE GADTs #-}</span><br><span class="token keyword">module</span> <span class="token constant">Main</span> <span class="token keyword">where</span><br><br><span class="token keyword">type</span> <span class="token constant">Message</span> <span class="token operator">=</span> <span class="token constant">String</span><br><span class="token keyword">type</span> <span class="token constant">Input</span>   <span class="token operator">=</span> <span class="token constant">String</span><br><br><span class="token keyword">data</span> <span class="token constant">Action</span> <span class="token hvariable">a</span> <span class="token keyword">where</span><br>  <span class="token constant">Send</span>    <span class="token operator">::</span> <span class="token constant">Message</span> <span class="token operator">-></span> <span class="token constant">Action</span> <span class="token punctuation">(</span><span class="token punctuation">)</span><br>  <span class="token constant">Receive</span> <span class="token operator">::</span> <span class="token constant">Action</span> <span class="token constant">Input</span><br><br><span class="token keyword">data</span> <span class="token constant">Program</span> <span class="token hvariable">a</span> <span class="token keyword">where</span><br>  <span class="token constant">Combine</span> <span class="token operator">::</span> <span class="token constant">Action</span> <span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token punctuation">(</span><span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token constant">Program</span> <span class="token hvariable">b</span><span class="token punctuation">)</span> <span class="token operator">-></span> <span class="token constant">Program</span> <span class="token hvariable">b</span><br>  <span class="token constant">Exit</span>    <span class="token operator">::</span> <span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token constant">Program</span> <span class="token hvariable">a</span><br><br><span class="token keyword">instance</span> <span class="token constant">Functor</span> <span class="token constant">Program</span> <span class="token keyword">where</span><br>  <span class="token builtin">fmap</span> <span class="token hvariable">f</span> <span class="token punctuation">(</span><span class="token constant">Combine</span> <span class="token hvariable">action</span> <span class="token hvariable">prog</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token constant">Combine</span> <span class="token hvariable">action</span> <span class="token punctuation">(</span><span class="token builtin">fmap</span> <span class="token hvariable">f</span><span class="token operator"> . </span><span class="token hvariable">prog</span><span class="token punctuation">)</span><br>  <span class="token builtin">fmap</span> <span class="token hvariable">f</span> <span class="token punctuation">(</span><span class="token constant">Exit</span> <span class="token hvariable">a</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token constant">Exit</span> <span class="token punctuation">(</span><span class="token hvariable">f</span> <span class="token hvariable">a</span><span class="token punctuation">)</span><br><br><span class="token keyword">instance</span> <span class="token constant">Applicative</span> <span class="token constant">Program</span> <span class="token keyword">where</span><br>  <span class="token punctuation">(</span><span class="token operator">&lt;*></span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token constant">Combine</span> <span class="token hvariable">action</span> <span class="token hvariable">prog</span><span class="token punctuation">)</span> <span class="token hvariable">arg</span> <span class="token operator">=</span> <span class="token constant">Combine</span> <span class="token hvariable">action</span> <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token hvariable">prog</span> <span class="token hvariable">a</span> <span class="token operator">&lt;*></span> <span class="token hvariable">arg</span><span class="token punctuation">)</span><br>  <span class="token punctuation">(</span><span class="token operator">&lt;*></span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token constant">Exit</span> <span class="token hvariable">f</span><span class="token punctuation">)</span> <span class="token hvariable">arg</span> <span class="token operator">=</span> <span class="token builtin">fmap</span> <span class="token hvariable">f</span> <span class="token hvariable">arg</span><br>  <span class="token hvariable">pure</span> <span class="token operator">=</span> <span class="token constant">Exit</span><br><br><span class="token keyword">instance</span> <span class="token constant">Monad</span> <span class="token constant">Program</span> <span class="token keyword">where</span><br>  <span class="token punctuation">(</span><span class="token operator">>>=</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token constant">Combine</span> <span class="token hvariable">action</span> <span class="token hvariable">prog</span><span class="token punctuation">)</span> <span class="token hvariable">next</span> <span class="token operator">=</span> <span class="token constant">Combine</span> <span class="token hvariable">action</span> <span class="token punctuation">(</span><span class="token operator">\</span><span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token hvariable">prog</span> <span class="token hvariable">a</span> <span class="token operator">>>=</span> <span class="token hvariable">next</span><span class="token punctuation">)</span><br>  <span class="token punctuation">(</span><span class="token operator">>>=</span><span class="token punctuation">)</span> <span class="token punctuation">(</span><span class="token constant">Exit</span> <span class="token hvariable">a</span><span class="token punctuation">)</span> <span class="token hvariable">next</span> <span class="token operator">=</span> <span class="token hvariable">next</span> <span class="token hvariable">a</span><br><br><span class="token hvariable">send</span> <span class="token operator">::</span> <span class="token constant">Message</span> <span class="token operator">-></span> <span class="token constant">Program</span> <span class="token punctuation">(</span><span class="token punctuation">)</span><br><span class="token hvariable">send</span> <span class="token hvariable">msg</span> <span class="token operator">=</span> <span class="token constant">Combine</span> <span class="token punctuation">(</span><span class="token constant">Send</span> <span class="token hvariable">msg</span><span class="token punctuation">)</span> <span class="token constant">Exit</span><br><br><span class="token hvariable">receive</span> <span class="token operator">::</span> <span class="token constant">Program</span> <span class="token constant">Input</span><br><span class="token hvariable">receive</span> <span class="token operator">=</span> <span class="token constant">Combine</span> <span class="token constant">Receive</span> <span class="token constant">Exit</span><br><br><span class="token hvariable">program</span> <span class="token operator">::</span> <span class="token constant">Program</span> <span class="token punctuation">(</span><span class="token punctuation">)</span><br><span class="token hvariable">program</span> <span class="token operator">=</span> <span class="token keyword">do</span><br>    <span class="token hvariable">send</span> <span class="token string">"Hello and welcome. What is your name?"</span><br>    <span class="token hvariable">name</span> <span class="token operator">&lt;-</span> <span class="token hvariable">receive</span><br>    <span class="token hvariable">send</span> <span class="token punctuation">(</span><span class="token string">"Thanks for chatting "</span> <span class="token operator">++</span> <span class="token hvariable">name</span><span class="token punctuation">)</span><br><br><span class="token hvariable">interpret</span> <span class="token operator">::</span> <span class="token constant">Program</span> <span class="token hvariable">a</span> <span class="token operator">-></span> <span class="token constant">IO</span> <span class="token hvariable">a</span><br><span class="token hvariable">interpret</span> <span class="token punctuation">(</span><span class="token constant">Exit</span> <span class="token hvariable">a</span><span class="token punctuation">)</span> <span class="token operator">=</span> <span class="token builtin">return</span> <span class="token hvariable">a</span><br><span class="token hvariable">interpret</span> <span class="token punctuation">(</span><span class="token constant">Combine</span> <span class="token hvariable">action</span> <span class="token hvariable">p</span><span class="token punctuation">)</span> <span class="token operator">=</span><br>  <span class="token keyword">case</span> <span class="token hvariable">action</span> <span class="token keyword">of</span><br>    <span class="token constant">Send</span> <span class="token hvariable">msg</span> <span class="token operator">-></span> <span class="token keyword">do</span><br>      <span class="token builtin">putStrLn</span> <span class="token hvariable">msg</span><br>      <span class="token hvariable">interpret</span> <span class="token punctuation">(</span><span class="token hvariable">p</span> <span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><br>    <span class="token constant">Receive</span> <span class="token operator">-></span> <span class="token keyword">do</span><br>      <span class="token hvariable">input</span> <span class="token operator">&lt;-</span> <span class="token builtin">getLine</span><br>      <span class="token hvariable">interpret</span> <span class="token punctuation">(</span><span class="token hvariable">p</span> <span class="token hvariable">input</span><span class="token punctuation">)</span><br><br><span class="token hvariable">main</span> <span class="token operator">=</span> <span class="token hvariable">interpret</span> <span class="token hvariable">program</span></code></pre>
+<iframe frameborder="0" width="100%" height="500px" src="https://repl.it/@JohannesHilden/MellowStripedBootstrapping#main.hs?lite=true&outputonly=1"></iframe>
+<!--
+Here is the output of running the program:
+
+```text
+> main
+Hello and welcome. What is your name?
+Phileas Fogg 
+Thanks for chatting Phileas Fogg 
+```
+-->
+<!--
+With older versions of [Prelude](http://hackage.haskell.org/package/base/docs/Prelude.html), you need to `import Control.Applicative` and declare `return = pure` in the monad instance for this program to compile.
+-->
+<p>This was a lot of work, but it pays off in the end.
+In the next post we'll explore and make use of a special property of this monad which will let us get rid of some of the boilerplate and make the code more elegant 🎩.
+We will also develop some more practical interpreters that let us interact with the user in more interesting ways.
+Until then!</p>
+<!-- 
+<div class="cleanslate">
+<div>
+\[\int_1^\pi \sin x \mathrm{d} x\]
+</div>
+</div>
+-->
+
+</article>
+
+    </main> 
+    <footer>&copy;<script type="text/javascript">document.write(new Date().getFullYear());</script> Farm Radio International's Digital Innovation Team</footer> 
+  </div>
+</body> 
+</html>
